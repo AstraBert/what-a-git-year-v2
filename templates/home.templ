@@ -1,0 +1,18 @@
+package templates
+
+templ Home(authenticated bool) {
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>What-A-Git-Year - Home</title>
+        <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    </head>
+    <div class="flex flex-col justify-center items-center gap-y-8">
+        @NavBar(authenticated)
+        <h2 class="text-lg font-semibold text-gray-600">Spotify Wrapped, for GitHub.</h2>
+        <h3 class="text-lg font-semibold text-gray-500">Ready to get to know more about your year on GitHub?</h3>
+    </div>
+}

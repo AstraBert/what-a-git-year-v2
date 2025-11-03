@@ -12,6 +12,7 @@ import (
 	"github.com/AstraBert/what-a-git-year-v2/db"
 	"github.com/AstraBert/what-a-git-year-v2/gh"
 	"github.com/AstraBert/what-a-git-year-v2/monitoring"
+	"github.com/AstraBert/what-a-git-year-v2/templates"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -56,6 +57,10 @@ func HandleUserSearch(c *fiber.Ctx) error {
 }
 
 func HandleOrgSearch(c *fiber.Ctx) error {
+	err := auth.AuthorizePost(c)
+	if err != nil {
+		return c.SendStatus(401)
+	}
 	uniqueSearchId, _ := auth.GenerateToken(16)
 	organization := c.FormValue("organization")
 	phMonitor, ghClient := configurePosthogAndGitHub()
@@ -77,25 +82,29 @@ func HandleOrgSearch(c *fiber.Ctx) error {
 	return c.Status(200).JSON(fiber.Map{"stats": stats})
 }
 
-func HomeRoute() {
-
+func HomeRoute(c *fiber.Ctx) error {
+	err := auth.AuthorizeGet(c)
+	c.Set("Content-Type", "text/html")
+	return templates.Home(err == nil).Render(c.Context(), c.Response().BodyWriter())
 }
 
-func LoginRoute() {
-
+func LoginRoute(c *fiber.Ctx) error {
+	c.Set("Content-Type", "text/html")
+	return templates.SignIn().Render(c.Context(), c.Response().BodyWriter())
 }
 
-func SignUpRoute() {
-
-}
-
-func LogoutRoute() {
-
+func SignUpRoute(c *fiber.Ctx) error {
+	c.Set("Content-Type", "text/html")
+	return templates.SignUp().Render(c.Context(), c.Response().BodyWriter())
 }
 
 func HandleSignUp(c *fiber.Ctx) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
+	passwordR := c.FormValue("passwordRepeat")
+	if password != passwordR {
+		return c.SendStatus(400)
+	}
 	ctx := context.Background()
 	phMonitor := configurePosthog()
 	start := time.Now()
