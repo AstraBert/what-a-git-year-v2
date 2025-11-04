@@ -57,7 +57,7 @@ func HandleUserSearch(c *fiber.Ctx) error {
 }
 
 func HandleOrgSearch(c *fiber.Ctx) error {
-	err := auth.AuthorizePost(c)
+	_, err := auth.AuthorizePost(c)
 	if err != nil {
 		return c.SendStatus(401)
 	}
@@ -96,6 +96,11 @@ func LoginRoute(c *fiber.Ctx) error {
 func SignUpRoute(c *fiber.Ctx) error {
 	c.Set("Content-Type", "text/html")
 	return templates.SignUp().Render(c.Context(), c.Response().BodyWriter())
+}
+
+func PageDoesNotExistRoute(c *fiber.Ctx) error {
+	c.Set("Content-Type", "text/html")
+	return templates.Page404().Render(c.Context(), c.Response().BodyWriter())
 }
 
 func HandleSignUp(c *fiber.Ctx) error {
@@ -221,28 +226,28 @@ func HandleLogin(c *fiber.Ctx) error {
 }
 
 func HandleLogout(c *fiber.Ctx) error {
-	st := c.Cookies("session_token", "")
 	phMonitor := configurePosthog()
 	start := time.Now()
-	err := auth.AuthorizePost(c)
+	user, err := auth.AuthorizePost(c)
 	if err != nil {
-		phMonitor.SendEvent(st, "userAuth", "logout", time.Since(start).Milliseconds(), true, err.Error())
+		phMonitor.SendEvent(user.Username, "userAuth", "logout", time.Since(start).Milliseconds(), true, err.Error())
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Internal server error: " + err.Error()})
 	} else {
 		ctx := context.Background()
 		sqlDb, err := auth.CreateNewDb()
 		if err != nil {
-			phMonitor.SendEvent(st, "userAuth", "logout", time.Since(start).Milliseconds(), true, err.Error())
+			phMonitor.SendEvent(user.Username, "userAuth", "logout", time.Since(start).Milliseconds(), true, err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Internal server error: " + err.Error()})
 		}
 		queries := db.New(sqlDb)
+		st := c.Cookies("session_token", "")
 		csrf := c.Cookies("csrf_token", "")
 		err = queries.UpdateUserTokensLogout(ctx, db.UpdateUserTokensLogoutParams{SessionToken: pgtype.Text{String: st, Valid: true}, CsrfToken: pgtype.Text{String: csrf, Valid: true}})
 		if err != nil {
-			phMonitor.SendEvent(st, "userAuth", "logout", time.Since(start).Milliseconds(), true, err.Error())
+			phMonitor.SendEvent(user.Username, "userAuth", "logout", time.Since(start).Milliseconds(), true, err.Error())
 			c.SendStatus(500)
 		}
-		phMonitor.SendEvent(st, "userAuth", "logout", time.Since(start).Milliseconds(), false, "")
+		phMonitor.SendEvent(user.Username, "userAuth", "logout", time.Since(start).Milliseconds(), false, "")
 		c.Set("HX-Redirect", "/signin")
 		return c.SendStatus(fiber.StatusOK)
 	}

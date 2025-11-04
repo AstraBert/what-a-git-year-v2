@@ -25,5 +25,7 @@ func Setup() *fiber.App {
 	app.Post("/logout", handlers.HandleLogout)
 	app.Post("/register", handlers.HandleSignUp)
 	app.Get("/", handlers.HomeRoute)
+	app.Static("/static", "./static/")
+	app.Use(handlers.PageDoesNotExistRoute)
 	return app
 }

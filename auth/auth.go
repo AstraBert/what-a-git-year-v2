@@ -11,29 +11,29 @@ import (
 
 var ErrUnauthorized = errors.New("unauthorized")
 
-func AuthorizePost(c *fiber.Ctx) error {
+func AuthorizePost(c *fiber.Ctx) (*db.User, error) {
 	sqlDb, err := CreateNewDb()
 	if err != nil {
-		return ErrUnauthorized
+		return nil, ErrUnauthorized
 	}
 	st := c.Cookies("session_token", "")
 	if st == "" {
-		return ErrUnauthorized
+		return nil, ErrUnauthorized
 	}
 	queries := db.New(sqlDb)
 	ctx := context.Background()
 	user, err := queries.GetUserBySessionToken(ctx, pgtype.Text{String: st, Valid: true})
 	if err != nil {
-		return ErrUnauthorized
+		return nil, ErrUnauthorized
 	}
 	csrf := c.Cookies("csrf_token", "")
 	if csrf == "" {
-		return ErrUnauthorized
+		return nil, ErrUnauthorized
 	}
 	if csrf != user.CsrfToken.String {
-		return ErrUnauthorized
+		return nil, ErrUnauthorized
 	}
-	return nil
+	return &user, nil
 }
 
 func AuthorizeGet(c *fiber.Ctx) error {
