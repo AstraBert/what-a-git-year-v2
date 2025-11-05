@@ -29,7 +29,7 @@ func Home(authenticated bool) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>What-A-Git-Year - Home</title><script src=\"https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.min.js\"></script><link href=\"https://cdn.jsdelivr.net/npm/daisyui@5\" rel=\"stylesheet\" type=\"text/css\"><script src=\"https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4\"></script><script defer src=\"https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js\"></script></head><div class=\"flex flex-col justify-center items-center gap-y-8\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>What-A-Git-Year - Home</title><script src=\"https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.min.js\"></script><link href=\"https://cdn.jsdelivr.net/npm/daisyui@5\" rel=\"stylesheet\" type=\"text/css\"><script src=\"https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4\"></script><script defer src=\"https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js\"></script></head><div class=\"flex flex-col justify-center items-center\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -37,7 +37,15 @@ func Home(authenticated bool) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<h2 class=\"text-lg font-semibold text-gray-600\">Spotify Wrapped, for GitHub.</h2><h3 class=\"text-lg font-semibold text-gray-500\">Ready to get to know more about your year on GitHub?</h3></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"hero bg-base-200 min-h-screen\"><div class=\"hero-content flex-col lg:flex-row\"><img src=\"/static/hero.png\" class=\"max-w-lg rounded-lg shadow-lg p-6\"><div><h1 class=\"text-5xl font-bold px-4\">What a Git Year!</h1><h1 class=\"text-3xl font-bold px-4\">Spotify wrapped for GitHub</h1><p class=\"py-6 px-4\">Get statistics about your (or your organization's) GitHub activity in the past year, share them with others and get inspired to build more!</p><div class=\"px-4\"><a href=\"/user\"><button class=\"btn btn-primary bg-gray-700 hover:bg-black text-white rounded shadow-sm\">Get Started</button></a> <a href=\"/signin\"><button class=\"btn btn-primary bg-gray-700 hover:bg-black text-white rounded shadow-sm\">Log In For More Features!</button></a></div></div></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = Footer().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

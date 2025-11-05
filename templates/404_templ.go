@@ -29,7 +29,15 @@ func Page404() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>What A Git Year - Page Not Found</title><link href=\"https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css\" rel=\"stylesheet\" type=\"text/css\"><script src=\"https://cdn.tailwindcss.com\"></script></head><body data-theme=\"light\"><div class=\"min-h-screen flex items-center justify-center px-4\"><div class=\"text-center max-w-md w-full\"><h1 class=\"text-9xl font-bold text-red-700\">404</h1><h2 class=\"text-3xl font-semibold mb-4\">Ooops, this page does not exist!</h2><p class=\"text-lg text-base-content/70 mb-6\">Or maybe you stumbled on a black hole!</p><br><img src=\"/static/404.png\"><br><div class=\"flex flex-col sm:flex-row gap-3 justify-center\"><a href=\"/\" class=\"btn btn-primary bg-gray-600 hover:bg-gray-700 text-white shadow-sm hover:shadow-lg\">Return to Home</a> <a href=\"/user\" class=\"btn btn-primary bg-gray-600 hover:bg-gray-700 text-white shadow-sm hover:shadow-lg\">Discover your Git Year!</a></div></div></div></body>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>What A Git Year - Page Not Found</title><link href=\"https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css\" rel=\"stylesheet\" type=\"text/css\"><script src=\"https://cdn.tailwindcss.com\"></script></head><body data-theme=\"light\"><div class=\"min-h-screen flex items-center justify-center px-4\"><div class=\"text-center max-w-md w-full\"><h1 class=\"text-9xl font-bold text-red-700\">404</h1><h2 class=\"text-3xl font-semibold mb-4\">Ooops, this page does not exist!</h2><p class=\"text-lg text-base-content/70 mb-6\">Or maybe you stumbled on a black hole!</p><br><img src=\"/static/404.png\"><br><div class=\"flex flex-col sm:flex-row gap-3 justify-center\"><a href=\"/\" class=\"btn btn-primary bg-gray-600 hover:bg-gray-700 text-white shadow-sm hover:shadow-lg\">Return to Home</a> <a href=\"/user\" class=\"btn btn-primary bg-gray-600 hover:bg-gray-700 text-white shadow-sm hover:shadow-lg\">Discover your Git Year!</a></div></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = Footer().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</body>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
