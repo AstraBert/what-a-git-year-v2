@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -34,6 +37,47 @@ func configurePosthogAndGitHub() (*monitoring.PosthogMonitor, *gh.GitYearClient)
 	return phMonitor, ghClient
 }
 
+type SearchInput struct {
+	Value string `json:"value"`
+}
+
+func SearchGateway(c *fiber.Ctx) error {
+	searchType := c.FormValue("search-type")
+	searchInput := c.FormValue("searc-input")
+	searchBody := SearchInput{Value: searchInput}
+	byteData, err := json.Marshal(searchBody)
+	if err != nil {
+		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
+	}
+	if searchType == "organization" {
+		req, err := http.NewRequest("POST", "/search/org", bytes.NewReader(byteData))
+		if err != nil {
+			return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
+		}
+		req.AddCookie(&http.Cookie{Name: "session_token", Value: c.Cookies("session_token")})
+		req.AddCookie(&http.Cookie{Name: "csrf_token", Value: c.Cookies("csrf_token")})
+		client := http.Client{Timeout: 600 * time.Second}
+		resp, err := client.Do(req)
+		if err != nil {
+			return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
+		} else {
+			return c.Status(200).JSON(fiber.Map{"response": resp})
+		}
+	} else {
+		req, err := http.NewRequest("POST", "/search/user", bytes.NewReader(byteData))
+		if err != nil {
+			return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
+		}
+		client := http.Client{Timeout: 600 * time.Second}
+		resp, err := client.Do(req)
+		if err != nil {
+			return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
+		} else {
+			return c.Status(200).JSON(fiber.Map{"response": resp})
+		}
+	}
+}
+
 func HandleUserSearch(c *fiber.Ctx) error {
 	uniqueSearchId, _ := auth.GenerateToken(16)
 	user := c.FormValue("user")
@@ -47,7 +91,7 @@ func HandleUserSearch(c *fiber.Ctx) error {
 		if errPh != nil {
 			log.Println("PostHog failed to record event")
 		}
-		return c.SendStatus(500)
+		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 	}
 	errPh := phMonitor.SendEvent(uniqueSearchId, "ghSearch", "userSearch", latency, false, "")
 	if errPh != nil {
@@ -59,7 +103,7 @@ func HandleUserSearch(c *fiber.Ctx) error {
 func HandleOrgSearch(c *fiber.Ctx) error {
 	_, err := auth.AuthorizePost(c)
 	if err != nil {
-		return c.SendStatus(401)
+		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 	}
 	uniqueSearchId, _ := auth.GenerateToken(16)
 	organization := c.FormValue("organization")
@@ -73,7 +117,7 @@ func HandleOrgSearch(c *fiber.Ctx) error {
 		if errPh != nil {
 			log.Println("PostHog failed to record event")
 		}
-		return c.SendStatus(500)
+		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 	}
 	errPh := phMonitor.SendEvent(uniqueSearchId, "ghSearch", "userSearch", latency, false, "")
 	if errPh != nil {
@@ -103,6 +147,12 @@ func PageDoesNotExistRoute(c *fiber.Ctx) error {
 	return templates.Page404().Render(c.Context(), c.Response().BodyWriter())
 }
 
+func SearchRoute(c *fiber.Ctx) error {
+	err := auth.AuthorizeGet(c)
+	c.Set("Content-Type", "text/html")
+	return templates.SearchInterface(err == nil).Render(c.Context(), c.Response().BodyWriter())
+}
+
 func HandleSignUp(c *fiber.Ctx) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
@@ -115,10 +165,8 @@ func HandleSignUp(c *fiber.Ctx) error {
 	start := time.Now()
 	sqlDb, err := auth.CreateNewDb()
 	if err != nil {
-		// banners := templates.SingupBanner(err)
-		// return banners.Render(c.Context(), c.Response().BodyWriter())
 		phMonitor.SendEvent(username, "userAuth", "signUp", time.Since(start).Milliseconds(), true, err.Error())
-		return c.SendStatus(500)
+		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 	}
 	queries := db.New(sqlDb)
 	_, err = queries.GetUser(ctx, username)
@@ -128,35 +176,25 @@ func HandleSignUp(c *fiber.Ctx) error {
 			hashed_psw, err := auth.HashPassword(password)
 			thirdPoint := time.Now()
 			if err != nil {
-				// banners := templates.SingupBanner(err)
-				// return banners.Render(c.Context(), c.Response().BodyWriter())
 				phMonitor.SendEvent(username, "userAuth", "signUp", thirdPoint.Sub(start).Milliseconds(), true, err.Error())
-				return c.SendStatus(500)
+				return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 			}
 			_, err = queries.CreateUser(ctx, db.CreateUserParams{Username: username, HashedPassword: hashed_psw})
 			end := time.Now()
 			if err != nil {
-				// banners := templates.SingupBanner(err)
-				// return banners.Render(c.Context(), c.Response().BodyWriter())
 				phMonitor.SendEvent(username, "userAuth", "signUp", end.Sub(start).Milliseconds(), true, err.Error())
-				return c.SendStatus(500)
+				return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 			} else {
-				// banners := templates.SingupBanner(nil)
-				// return banners.Render(c.Context(), c.Response().BodyWriter())
 				phMonitor.SendEvent(username, "userAuth", "signUp", end.Sub(start).Milliseconds(), false, "")
-				return c.SendStatus(200)
+				return templates.StatusBanner(nil).Render(c.Context(), c.Response().BodyWriter())
 			}
 		} else {
-			// banners := templates.SingupBanner(err)
-			// return banners.Render(c.Context(), c.Response().BodyWriter())
 			phMonitor.SendEvent(username, "userAuth", "signUp", secondPoint.Sub(start).Milliseconds(), true, err.Error())
-			return c.SendStatus(500)
+			return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 		}
 	} else {
-		// banners := templates.SingupBanner(errors.New("user already exists"))
-		// return banners.Render(c.Context(), c.Response().BodyWriter())
 		phMonitor.SendEvent(username, "userAuth", "signUp", secondPoint.Sub(start).Milliseconds(), true, "user already exists")
-		return c.SendStatus(fiber.StatusConflict)
+		return templates.StatusBanner(errors.New("user already exists")).Render(c.Context(), c.Response().BodyWriter())
 	}
 }
 
@@ -169,42 +207,32 @@ func HandleLogin(c *fiber.Ctx) error {
 	sqlDb, err := auth.CreateNewDb()
 	if err != nil {
 		phMonitor.SendEvent(username, "userAuth", "login", time.Since(start).Milliseconds(), true, err.Error())
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Internal server error: " + err.Error()})
+		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 	}
 	queries := db.New(sqlDb)
 	user, err := queries.GetUser(ctx, username)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			// banners := templates.SingupBanner(errors.New("there is no user with this username"))
-			// return banners.Render(c.Context(), c.Response().BodyWriter())
 			phMonitor.SendEvent(username, "userAuth", "login", time.Since(start).Milliseconds(), true, err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Internal server error: " + err.Error()})
+			return templates.StatusBanner(errors.New("there is no user with this username")).Render(c.Context(), c.Response().BodyWriter())
 		} else {
-			// banners := templates.SingupBanner(err)
-			// return banners.Render(c.Context(), c.Response().BodyWriter())
 			phMonitor.SendEvent(username, "userAuth", "login", time.Since(start).Milliseconds(), true, err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Internal server error: " + err.Error()})
+			return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 		}
 	}
 	if !auth.CompareHashToPassword(password, user.HashedPassword) {
-		// banners := templates.SingupBanner(errors.New("wrong username or password"))
-		// return banners.Render(c.Context(), c.Response().BodyWriter())
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Unauthorized"})
+		return templates.StatusBanner(errors.New("wrong username or password")).Render(c.Context(), c.Response().BodyWriter())
 	} else {
 		sess_token, errSes := auth.GenerateToken(32)
 		csrf_token, errCsrf := auth.GenerateToken(32)
 		if errSes != nil || errCsrf != nil {
-			// banners := templates.SingupBanner(errors.New("an error occurred while generating your authentication credentials"))
-			// return banners.Render(c.Context(), c.Response().BodyWriter())
 			phMonitor.SendEvent(username, "userAuth", "login", time.Since(start).Milliseconds(), true, "an error occurred while generating auth credentials")
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Internal server error: " + errors.New("an error occurred while generating your authentication credentials").Error()})
+			return templates.StatusBanner(errors.New("an error occurred while generating your authentication credentials")).Render(c.Context(), c.Response().BodyWriter())
 		}
 		err = queries.UpdateUserTokensLogin(ctx, db.UpdateUserTokensLoginParams{SessionToken: pgtype.Text{String: sess_token, Valid: true}, CsrfToken: pgtype.Text{String: csrf_token, Valid: true}, Username: username})
 		if err != nil {
 			phMonitor.SendEvent(username, "userAuth", "login", time.Since(start).Milliseconds(), true, err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Internal server error: " + err.Error()})
-			// banners := templates.SingupBanner(err)
-			// return banners.Render(c.Context(), c.Response().BodyWriter())
+			return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 		} else {
 			c.Cookie(&fiber.Cookie{
 				Name:     "session_token",
@@ -231,13 +259,13 @@ func HandleLogout(c *fiber.Ctx) error {
 	user, err := auth.AuthorizePost(c)
 	if err != nil {
 		phMonitor.SendEvent(user.Username, "userAuth", "logout", time.Since(start).Milliseconds(), true, err.Error())
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Internal server error: " + err.Error()})
+		return c.Status(500).JSON(fiber.Map{"message": "An error occurred: " + err.Error()})
 	} else {
 		ctx := context.Background()
 		sqlDb, err := auth.CreateNewDb()
 		if err != nil {
 			phMonitor.SendEvent(user.Username, "userAuth", "logout", time.Since(start).Milliseconds(), true, err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Internal server error: " + err.Error()})
+			return c.Status(500).JSON(fiber.Map{"message": "An error occurred: " + err.Error()})
 		}
 		queries := db.New(sqlDb)
 		st := c.Cookies("session_token", "")
@@ -245,7 +273,7 @@ func HandleLogout(c *fiber.Ctx) error {
 		err = queries.UpdateUserTokensLogout(ctx, db.UpdateUserTokensLogoutParams{SessionToken: pgtype.Text{String: st, Valid: true}, CsrfToken: pgtype.Text{String: csrf, Valid: true}})
 		if err != nil {
 			phMonitor.SendEvent(user.Username, "userAuth", "logout", time.Since(start).Milliseconds(), true, err.Error())
-			c.SendStatus(500)
+			return c.Status(500).JSON(fiber.Map{"message": "An error occurred: " + err.Error()})
 		}
 		phMonitor.SendEvent(user.Username, "userAuth", "logout", time.Since(start).Milliseconds(), false, "")
 		c.Set("HX-Redirect", "/signin")
