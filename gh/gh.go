@@ -9,26 +9,28 @@ import (
 )
 
 type UserStats struct {
-	User            string
-	Repositories    int
-	TopRepositories []string
-	Commits         int
-	Stars           int
-	Forks           int
-	Topics          []string
+	User            string   `json:"user"`
+	AvatarUrl       string   `json:"avatar_url"`
+	Repositories    int      `json:"repositories"`
+	TopRepositories []string `json:"top_repositories"`
+	Commits         int      `json:"commits"`
+	Stars           int      `json:"stars"`
+	Forks           int      `json:"forks"`
+	Topics          []string `json:"topics"`
 }
 
 type OrgStats struct {
-	Organization    string
-	Repositories    int
-	TopRepositories []string
-	Commits         int
-	Stars           int
-	Forks           int
-	Topics          []string
+	Organization    string   `json:"organization"`
+	AvatarUrl       string   `json:"avatar_url"`
+	Repositories    int      `json:"repositories"`
+	TopRepositories []string `json:"top_repositories"`
+	Commits         int      `json:"commits"`
+	Stars           int      `json:"stars"`
+	Forks           int      `json:"forks"`
+	Topics          []string `json:"topics"`
 }
 
-func NewUserStats(repos, commits, stars, forks int, topics, topRepos []string, user string) *UserStats {
+func NewUserStats(repos, commits, stars, forks int, topics, topRepos []string, user, avatarUrl string) *UserStats {
 	return &UserStats{
 		User:            user,
 		Repositories:    repos,
@@ -37,10 +39,11 @@ func NewUserStats(repos, commits, stars, forks int, topics, topRepos []string, u
 		Forks:           forks,
 		TopRepositories: topRepos,
 		Topics:          topics,
+		AvatarUrl:       avatarUrl,
 	}
 }
 
-func NewOrgStats(repos, commits, stars, forks int, topics, topRepos []string, organization string) *OrgStats {
+func NewOrgStats(repos, commits, stars, forks int, topics, topRepos []string, organization, avatarUrl string) *OrgStats {
 	return &OrgStats{
 		Organization:    organization,
 		Repositories:    repos,
@@ -49,6 +52,7 @@ func NewOrgStats(repos, commits, stars, forks int, topics, topRepos []string, or
 		Forks:           forks,
 		TopRepositories: topRepos,
 		Topics:          topics,
+		AvatarUrl:       avatarUrl,
 	}
 }
 
@@ -102,6 +106,7 @@ func (c *GitYearClient) GetUserStats(user string) (*UserStats, error) {
 	if err != nil {
 		return nil, err
 	} else {
+		avatarUrl := ""
 		repoStars := map[string]int{}
 		totalRepos := 0
 		totalStars := 0
@@ -110,6 +115,9 @@ func (c *GitYearClient) GetUserStats(user string) (*UserStats, error) {
 		totalCommits := 0
 		for _, repo := range repos {
 			if repo.CreatedAt != nil && isWithinYear(*repo.CreatedAt.GetTime()) && repo.Owner != nil && *repo.Owner.Login == user {
+				if avatarUrl == "" {
+					avatarUrl = repo.Owner.GetAvatarURL()
+				}
 				if repo.FullName != nil {
 					totalRepos += 1
 					repoStars[*repo.FullName] = *repo.StargazersCount
@@ -139,7 +147,7 @@ func (c *GitYearClient) GetUserStats(user string) (*UserStats, error) {
 				}
 			}
 		}
-		return NewUserStats(totalRepos, totalCommits, totalStars, totalForks, chooseTopTen(topics), chooseTopTen(repoStars), user), nil
+		return NewUserStats(totalRepos, totalCommits, totalStars, totalForks, chooseTopTen(topics), chooseTopTen(repoStars), user, avatarUrl), nil
 	}
 }
 
@@ -156,8 +164,12 @@ func (c *GitYearClient) GetOrgStats(organization string) (*OrgStats, error) {
 		topics := map[string]int{}
 		totalForks := 0
 		totalCommits := 0
+		avatarUrl := ""
 		for _, repo := range repos {
 			if repo.CreatedAt != nil && isWithinYear(*repo.CreatedAt.GetTime()) && repo.Owner != nil && *repo.Owner.Login == organization {
+				if avatarUrl == "" {
+					avatarUrl = repo.Owner.GetAvatarURL()
+				}
 				if repo.FullName != nil {
 					totalRepos += 1
 					repoStars[*repo.FullName] = *repo.StargazersCount
@@ -187,6 +199,6 @@ func (c *GitYearClient) GetOrgStats(organization string) (*OrgStats, error) {
 				}
 			}
 		}
-		return NewOrgStats(totalRepos, totalCommits, totalStars, totalForks, chooseTopTen(topics), chooseTopTen(repoStars), organization), nil
+		return NewOrgStats(totalRepos, totalCommits, totalStars, totalForks, chooseTopTen(topics), chooseTopTen(repoStars), organization, avatarUrl), nil
 	}
 }

@@ -1,0 +1,134 @@
+package templates
+
+import "fmt"
+import "github.com/AstraBert/what-a-git-year-v2/gh"
+
+templ UserStatsDisplay(stats gh.UserStats) {
+	<div class="card bg-base-200 shadow-xl">
+		<div class="card-body">
+			<!-- Header with Avatar and Username -->
+			<div class="flex items-center gap-4 mb-6">
+				if stats.AvatarUrl != "" {
+                    <div class="avatar">
+                        <div class="w-20 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                            <img src={ stats.AvatarUrl } alt={ stats.User }/>
+                        </div>
+				    </div>
+                }
+				<div>
+					<h2 class="card-title text-3xl">{ stats.User }</h2>
+					<p class="text-base-content/70">What a Git Year you had!🎉</p>
+				</div>
+			</div>
+			
+			<!-- Stats Grid -->
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+				<div class="stat bg-base-100 rounded-lg shadow">
+					<div class="stat-title">Repositories📁</div>
+					<div class="stat-value text-primary">{ fmt.Sprintf("%d", stats.Repositories) }</div>
+				</div>
+				<div class="stat bg-base-100 rounded-lg shadow">
+					<div class="stat-title">Commits⬆️</div>
+					<div class="stat-value text-secondary">{ fmt.Sprintf("%d", stats.Commits) }</div>
+				</div>
+				<div class="stat bg-base-100 rounded-lg shadow">
+					<div class="stat-title">Stars⭐</div>
+					<div class="stat-value text-accent">{ fmt.Sprintf("%d", stats.Stars) }</div>
+				</div>
+				<div class="stat bg-base-100 rounded-lg shadow">
+					<div class="stat-title">Forks🍴</div>
+					<div class="stat-value text-info">{ fmt.Sprintf("%d", stats.Forks) }</div>
+				</div>
+			</div>
+			
+			<!-- Top Repositories -->
+			if len(stats.TopRepositories) > 0 {
+				<div class="mb-4">
+					<h3 class="text-xl font-semibold mb-3">Top Repositories🤩</h3>
+					<div class="flex flex-wrap gap-2">
+						for _, repo := range stats.TopRepositories {
+							<div class="badge badge-lg badge-outline">{ repo }</div>
+						}
+					</div>
+				</div>
+			}
+			
+			<!-- Topics -->
+			if len(stats.Topics) > 0 {
+				<div>
+					<h3 class="text-xl font-semibold mb-3">Topics📊</h3>
+					<div class="flex flex-wrap gap-2">
+						for _, topic := range stats.Topics {
+							<div class="badge badge-primary">{ topic }</div>
+						}
+					</div>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ OrgStatsDisplay(stats gh.OrgStats) {
+	<div class="card bg-base-200 shadow-xl">
+		<div class="card-body">
+			<!-- Header with Avatar and Organization Name -->
+			<div class="flex items-center gap-4 mb-6">
+				if stats.AvatarUrl != "" {
+                    <div class="avatar">
+                        <div class="w-20 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                            <img src={ stats.AvatarUrl } alt={ stats.Organization }/>
+                        </div>
+				    </div>
+                }
+				<div>
+					<h2 class="card-title text-3xl">{ stats.Organization }</h2>
+					<p class="text-base-content/70">What a Git Year y'all had!🎉</p>
+				</div>
+			</div>
+			
+			<!-- Stats Grid -->
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+				<div class="stat bg-base-100 rounded-lg shadow">
+					<div class="stat-title">Repositories📁</div>
+					<div class="stat-value text-primary">{ fmt.Sprintf("%d", stats.Repositories) }</div>
+				</div>
+				<div class="stat bg-base-100 rounded-lg shadow">
+					<div class="stat-title">Commits⬆️</div>
+					<div class="stat-value text-secondary">{ fmt.Sprintf("%d", stats.Commits) }</div>
+				</div>
+				<div class="stat bg-base-100 rounded-lg shadow">
+					<div class="stat-title">Stars⭐</div>
+					<div class="stat-value text-accent">{ fmt.Sprintf("%d", stats.Stars) }</div>
+				</div>
+				<div class="stat bg-base-100 rounded-lg shadow">
+					<div class="stat-title">Forks🍴</div>
+					<div class="stat-value text-info">{ fmt.Sprintf("%d", stats.Forks) }</div>
+				</div>
+			</div>
+			
+			<!-- Top Repositories -->
+			if len(stats.TopRepositories) > 0 {
+				<div class="mb-4">
+					<h3 class="text-xl font-semibold mb-3">Top Repositories🤩</h3>
+					<div class="flex flex-wrap gap-2">
+						for _, repo := range stats.TopRepositories {
+							<div class="badge badge-lg badge-outline">{ repo }</div>
+						}
+					</div>
+				</div>
+			}
+			
+			<!-- Topics -->
+			if len(stats.Topics) > 0 {
+				<div>
+					<h3 class="text-xl font-semibold mb-3">Topics📊</h3>
+					<div class="flex flex-wrap gap-2">
+						for _, topic := range stats.Topics {
+							<div class="badge badge-primary">{ topic }</div>
+						}
+					</div>
+				</div>
+			}
+		</div>
+	</div>
+}

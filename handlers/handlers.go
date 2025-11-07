@@ -1,13 +1,10 @@
 package handlers
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -37,55 +34,24 @@ func configurePosthogAndGitHub() (*monitoring.PosthogMonitor, *gh.GitYearClient)
 	return phMonitor, ghClient
 }
 
-type SearchInput struct {
-	Value string `json:"value"`
-}
-
-func SearchGateway(c *fiber.Ctx) error {
+func HandleSearchGateway(c *fiber.Ctx) error {
 	searchType := c.FormValue("search-type")
-	searchInput := c.FormValue("searc-input")
-	searchBody := SearchInput{Value: searchInput}
-	byteData, err := json.Marshal(searchBody)
-	if err != nil {
-		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
-	}
-	if searchType == "organization" {
-		req, err := http.NewRequest("POST", "/search/org", bytes.NewReader(byteData))
-		if err != nil {
-			return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
-		}
-		req.AddCookie(&http.Cookie{Name: "session_token", Value: c.Cookies("session_token")})
-		req.AddCookie(&http.Cookie{Name: "csrf_token", Value: c.Cookies("csrf_token")})
-		client := http.Client{Timeout: 600 * time.Second}
-		resp, err := client.Do(req)
-		if err != nil {
-			return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
-		} else {
-			return c.Status(200).JSON(fiber.Map{"response": resp})
-		}
+	if searchType == "org" {
+		return HandleOrgSearch(c)
 	} else {
-		req, err := http.NewRequest("POST", "/search/user", bytes.NewReader(byteData))
-		if err != nil {
-			return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
-		}
-		client := http.Client{Timeout: 600 * time.Second}
-		resp, err := client.Do(req)
-		if err != nil {
-			return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
-		} else {
-			return c.Status(200).JSON(fiber.Map{"response": resp})
-		}
+		return HandleUserSearch(c)
 	}
 }
 
 func HandleUserSearch(c *fiber.Ctx) error {
 	uniqueSearchId, _ := auth.GenerateToken(16)
-	user := c.FormValue("user")
 	phMonitor, ghClient := configurePosthogAndGitHub()
+	value := c.FormValue("search-input")
 	start := time.Now()
-	stats, err := ghClient.GetUserStats(user)
+	stats, err := ghClient.GetUserStats(value)
 	end := time.Now()
 	latency := end.Sub(start).Milliseconds()
+	c.Set("Content-Type", "text/html")
 	if err != nil {
 		errPh := phMonitor.SendEvent(uniqueSearchId, "ghSearch", "userSearch", latency, true, err.Error())
 		if errPh != nil {
@@ -97,7 +63,7 @@ func HandleUserSearch(c *fiber.Ctx) error {
 	if errPh != nil {
 		log.Println("PostHog failed to record event")
 	}
-	return c.Status(200).JSON(fiber.Map{"stats": stats})
+	return templates.UserStatsDisplay(*stats).Render(c.Context(), c.Response().BodyWriter())
 }
 
 func HandleOrgSearch(c *fiber.Ctx) error {
@@ -106,24 +72,25 @@ func HandleOrgSearch(c *fiber.Ctx) error {
 		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 	}
 	uniqueSearchId, _ := auth.GenerateToken(16)
-	organization := c.FormValue("organization")
+	value := c.FormValue("search-input")
 	phMonitor, ghClient := configurePosthogAndGitHub()
 	start := time.Now()
-	stats, err := ghClient.GetOrgStats(organization)
+	stats, err := ghClient.GetOrgStats(value)
 	end := time.Now()
 	latency := end.Sub(start).Milliseconds()
+	c.Set("Content-Type", "text/html")
 	if err != nil {
-		errPh := phMonitor.SendEvent(uniqueSearchId, "ghSearch", "userSearch", latency, true, err.Error())
+		errPh := phMonitor.SendEvent(uniqueSearchId, "ghSearch", "orgSearch", latency, true, err.Error())
 		if errPh != nil {
 			log.Println("PostHog failed to record event")
 		}
 		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 	}
-	errPh := phMonitor.SendEvent(uniqueSearchId, "ghSearch", "userSearch", latency, false, "")
+	errPh := phMonitor.SendEvent(uniqueSearchId, "ghSearch", "orgSearch", latency, false, "")
 	if errPh != nil {
 		log.Println("PostHog failed to record event")
 	}
-	return c.Status(200).JSON(fiber.Map{"stats": stats})
+	return templates.OrgStatsDisplay(*stats).Render(c.Context(), c.Response().BodyWriter())
 }
 
 func HomeRoute(c *fiber.Ctx) error {

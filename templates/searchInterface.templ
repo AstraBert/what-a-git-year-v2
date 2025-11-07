@@ -31,7 +31,13 @@ templ SearchInterface(authenticated bool) {
 				<!-- Search Form -->
 				<div class="card bg-base-200 shadow-2xl">
 					<div class="card-body p-8">
-						<form id="search-form" class="space-y-6">
+						<form 
+						id="search-form" 
+						class="space-y-6" 
+						hx-post="/search/gateway"
+            			hx-target="#searchResult"
+           				hx-trigger="submit"
+						>
 							<!-- Search Type Toggle -->
 							<div class="flex justify-center gap-2">
 								<input
@@ -69,6 +75,7 @@ templ SearchInterface(authenticated bool) {
 									<input
 										type="text"
 										id="search-input"
+										name="search-input"
 										placeholder="Enter GitHub username or organization..."
 										class="input input-bordered input-lg join-item w-full focus:outline-offset-0"
 										required
@@ -104,14 +111,22 @@ templ SearchInterface(authenticated bool) {
 									<button
 										type="button"
 										class="badge badge-outline badge-lg cursor-pointer hover:badge-primary transition-colors"
+										hx-indicator="#loadingIndicator"
 										onclick="document.getElementById('search-input').value = 'huggingface'"
 									>
 										huggingface
 									</button>
 								</div>
 							</div>
+							<br>
+            				<br>
+							<div id="loadingIndicator" class="htmx-indicator flex justify-center items-center">
+								<span class="loading loading-spinner loading-lg"></span>
+							</div>
 						</form>
 					</div>
+					<div id="searchResult">
+    				</div>
 				</div>
 			</div>
 		</div>
