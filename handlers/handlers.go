@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"time"
 
@@ -246,4 +248,22 @@ func HandleLogout(c *fiber.Ctx) error {
 		c.Set("HX-Redirect", "/signin")
 		return c.SendStatus(fiber.StatusOK)
 	}
+}
+
+func HandleXPublish(c *fiber.Ctx) error {
+	text := c.FormValue("xInput")
+	params := url.Values{}
+	params.Add("text", text)
+	redirectUrl := fmt.Sprintf("https://twitter.com/intent/tweet?%s", params.Encode())
+	c.Set("HX-Redirect", redirectUrl)
+	return c.SendStatus(fiber.StatusOK)
+}
+
+func HandleBskyPublish(c *fiber.Ctx) error {
+	text := c.FormValue("bskyInput")
+	params := url.Values{}
+	params.Add("text", text)
+	redirectUrl := fmt.Sprintf("https://bsky.app/intent/compose?%s", params.Encode())
+	c.Set("HX-Redirect", redirectUrl)
+	return c.SendStatus(fiber.StatusOK)
 }

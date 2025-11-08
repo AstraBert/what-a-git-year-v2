@@ -1,9 +1,20 @@
 package templates
 
 import "fmt"
+import "strings"
 import "github.com/AstraBert/what-a-git-year-v2/gh"
 
 templ UserStatsDisplay(stats gh.UserStats) {
+	{{
+		statsText := fmt.Sprintf("What a Git Year I had!\nI created %d public repos, gained %d stars and %d forks and pushed %d public commits!", stats.Repositories, stats.Stars, stats.Forks, stats.Commits)
+		if len(stats.TopRepositories) != 0 {
+			statsText += "\nMy top repositories are: " + strings.Join(stats.TopRepositories, ", ")
+		}
+		if len(stats.Topics) != 0 {
+			statsText += "\nThe topics I worked the most with are: " + strings.Join(stats.Topics, ", ")
+		}
+		statsText += "\nFollow me on GitHub: github.com/" + stats.User
+	}}
 	<div class="card bg-base-200 shadow-xl" x-data>
 		<div class="card-body">
 			<!-- Header with Avatar and Username -->
@@ -25,7 +36,12 @@ templ UserStatsDisplay(stats gh.UserStats) {
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
 				<div class="stat bg-base-100 rounded-lg shadow">
 					<div class="stat-title">Repositories📁</div>
-					<div class="stat-value text-primary">{ fmt.Sprintf("%d", stats.Repositories) }</div>
+					if stats.Repositories != 100 {
+						<div class="stat-value text-primary">{ fmt.Sprintf("%d", stats.Repositories) }</div>
+					} else {
+						<div class="stat-value text-primary">{ fmt.Sprintf("%d", stats.Repositories) }+</div>
+					}
+					
 				</div>
 				<div class="stat bg-base-100 rounded-lg shadow">
 					<div class="stat-title">Commits⬆️</div>
@@ -71,6 +87,22 @@ templ UserStatsDisplay(stats gh.UserStats) {
 			@click="$refs.searchResult.innerHTML = ''"
 			x-ref="clearButton"
 		>Clear</button>
+		<form hx-get="/urls/bsky" hx-trigger="submit">
+			<textarea name="bskyInput" hidden>{statsText}</textarea>
+			<button
+				class="btn btn-primary btn-lg bg-blue-300 text-black shadow-sm w-full"
+				type="submit"
+			>
+			Share on BlueSky</button>
+		</form>
+		<form hx-get="/urls/x" hx-trigger="submit">
+			<textarea name="xInput" hidden>{statsText}</textarea>
+			<button
+				class="btn btn-primary btn-lg bg-black text-white shadow-sm w-full"
+				type="submit"
+			>
+			Share on X</button>
+		</form>
 	</div>
 }
 

@@ -28,10 +28,10 @@ func main() {
 	}
 }
 
-func cacheSetup(keyGen func(*fiber.Ctx) string) fiber.Handler {
+func cacheSetupPost(keyGen func(*fiber.Ctx) string) fiber.Handler {
 	cacheStorage := sqlite3.New(
 		sqlite3.Config{
-			Database:        "cache.db",
+			Database:        "cache_post.db",
 			Table:           os.Getenv("CACHE_TABLE"),
 			ConnMaxLifetime: 5 * time.Second,
 		},
@@ -42,7 +42,27 @@ func cacheSetup(keyGen func(*fiber.Ctx) string) fiber.Handler {
 			CacheControl: true,
 			Storage:      cacheStorage,
 			KeyGenerator: keyGen,
-			Methods:      []string{fiber.MethodGet, fiber.MethodPost, fiber.MethodHead},
+			Methods:      []string{fiber.MethodPost},
+		},
+	)
+	return cache
+}
+
+func cacheSetupGet(keyGen func(*fiber.Ctx) string) fiber.Handler {
+	cacheStorage := sqlite3.New(
+		sqlite3.Config{
+			Database:        "cache_get.db",
+			Table:           os.Getenv("CACHE_TABLE"),
+			ConnMaxLifetime: 5 * time.Second,
+		},
+	)
+	cache := cache.New(
+		cache.Config{
+			Expiration:   24 * time.Hour,
+			CacheControl: true,
+			Storage:      cacheStorage,
+			KeyGenerator: keyGen,
+			Methods:      []string{fiber.MethodGet, fiber.MethodHead},
 		},
 	)
 	return cache
@@ -82,7 +102,8 @@ func Setup() *fiber.App {
 	app := fiber.New()
 	searchKeyGen := func(c *fiber.Ctx) string {
 		val := sha256.Sum256([]byte(c.FormValue("search-input")))
-		return hex.EncodeToString(val[:])
+		val1 := sha256.Sum256([]byte(c.FormValue("search-type")))
+		return hex.EncodeToString(val[:]) + ":" + hex.EncodeToString(val1[:])
 	}
 	authKeyGen := func(c *fiber.Ctx) string {
 		usr := c.FormValue("username")
@@ -96,16 +117,18 @@ func Setup() *fiber.App {
 	defaultKeyGen := func(c *fiber.Ctx) string {
 		return utils.CopyString(c.Path())
 	}
-	authCache := cacheSetup(authKeyGen)
+	authCache := cacheSetupPost(authKeyGen)
 	app.Post("/login", authCache, limiterSetup(10), corsSetup("POST"), handlers.HandleLogin)
 	app.Post("/register", authCache, limiterSetup(10), corsSetup("POST"), handlers.HandleSignUp)
-	defaultCache := cacheSetup(defaultKeyGen)
-	app.Post("/logout", defaultCache, limiterSetup(10), corsSetup("POST"), handlers.HandleLogout)
+	defaultCache := cacheSetupGet(defaultKeyGen)
+	app.Post("/logout", limiterSetup(10), corsSetup("POST"), handlers.HandleLogout)
 	app.Get("/signin", defaultCache, corsSetup("GET"), handlers.LoginRoute)
 	app.Get("/signup", defaultCache, corsSetup("GET"), handlers.SignUpRoute)
 	app.Get("/", defaultCache, handlers.HomeRoute)
 	app.Get("/search", defaultCache, corsSetup("GET"), handlers.SearchRoute)
-	cacheSearch := cacheSetup(searchKeyGen)
+	app.Get("/urls/x", limiterSetup(10), corsSetup("GET"), handlers.HandleXPublish)
+	app.Get("/urls/bsky", limiterSetup(10), corsSetup("GET"), handlers.HandleBskyPublish)
+	cacheSearch := cacheSetupPost(searchKeyGen)
 	app.Post("/search/gateway", cacheSearch, limiterSetup(20), corsSetup("POST"), handlers.HandleSearchGateway)
 	app.Static("/static", "./static/")
 	app.Use(handlers.PageDoesNotExistRoute)
