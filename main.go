@@ -1,18 +1,20 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"log"
 	"os"
 	"slices"
-	"strconv"
 	"time"
 
+	"github.com/AstraBert/what-a-git-year-v2/auth"
 	"github.com/AstraBert/what-a-git-year-v2/handlers"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
-	"github.com/gofiber/storage/redis/v3"
+	"github.com/gofiber/fiber/v2/utils"
 	"github.com/gofiber/storage/sqlite3"
 )
 
@@ -26,17 +28,12 @@ func main() {
 	}
 }
 
-func cacheSetup() (fiber.Handler, error) {
-	redisPort, err := strconv.Atoi(os.Getenv("CACHE_REDIS_PORT"))
-	if err != nil {
-		return nil, err
-	}
-	cacheStorage := redis.New(
-		redis.Config{
-			Host:     os.Getenv("CACHE_REDIS_HOST"),
-			Password: os.Getenv("CACHE_REDIS_PASSWORD"),
-			Username: os.Getenv("CACHE_REDIS_USER"),
-			Port:     redisPort,
+func cacheSetup(keyGen func(*fiber.Ctx) string) fiber.Handler {
+	cacheStorage := sqlite3.New(
+		sqlite3.Config{
+			Database:        "cache.db",
+			Table:           os.Getenv("CACHE_TABLE"),
+			ConnMaxLifetime: 5 * time.Second,
 		},
 	)
 	cache := cache.New(
@@ -44,9 +41,11 @@ func cacheSetup() (fiber.Handler, error) {
 			Expiration:   1 * time.Hour,
 			CacheControl: true,
 			Storage:      cacheStorage,
+			KeyGenerator: keyGen,
+			Methods:      []string{fiber.MethodGet, fiber.MethodPost, fiber.MethodHead},
 		},
 	)
-	return cache, nil
+	return cache
 }
 
 func corsSetup(methods string) fiber.Handler {
@@ -65,7 +64,7 @@ func corsSetup(methods string) fiber.Handler {
 func limiterSetup(reqPerMinute int) fiber.Handler {
 	limiterStorage := sqlite3.New(
 		sqlite3.Config{
-			Database:        "ratelimiter",
+			Database:        "ratelimiter.db",
 			Table:           os.Getenv("RATE_LIMITING_TABLE"),
 			ConnMaxLifetime: 5 * time.Second,
 		},
@@ -81,18 +80,33 @@ func limiterSetup(reqPerMinute int) fiber.Handler {
 
 func Setup() *fiber.App {
 	app := fiber.New()
-	cache, err := cacheSetup()
-	if err == nil {
-		app.Use(cache)
+	searchKeyGen := func(c *fiber.Ctx) string {
+		val := sha256.Sum256([]byte(c.FormValue("search-input")))
+		return hex.EncodeToString(val[:])
 	}
-	app.Get("/signin", corsSetup("GET"), handlers.LoginRoute)
-	app.Get("/signup", corsSetup("GET"), handlers.SignUpRoute)
-	app.Post("/login", limiterSetup(10), corsSetup("POST"), handlers.HandleLogin)
-	app.Post("/logout", limiterSetup(10), corsSetup("POST"), handlers.HandleLogout)
-	app.Post("/register", limiterSetup(10), corsSetup("POST"), handlers.HandleSignUp)
-	app.Get("/", handlers.HomeRoute)
-	app.Get("/search", corsSetup("GET"), handlers.SearchRoute)
-	app.Post("/search/gateway", limiterSetup(20), corsSetup("POST"), handlers.HandleSearchGateway)
+	authKeyGen := func(c *fiber.Ctx) string {
+		usr := c.FormValue("username")
+		psw := c.FormValue("password")
+		encP, _ := auth.HashPassword(psw)
+		psw256 := sha256.Sum256([]byte(encP))
+		usr256 := sha256.Sum256([]byte(usr))
+		key := hex.EncodeToString(psw256[:]) + hex.EncodeToString(usr256[:])
+		return key
+	}
+	defaultKeyGen := func(c *fiber.Ctx) string {
+		return utils.CopyString(c.Path())
+	}
+	authCache := cacheSetup(authKeyGen)
+	app.Post("/login", authCache, limiterSetup(10), corsSetup("POST"), handlers.HandleLogin)
+	app.Post("/register", authCache, limiterSetup(10), corsSetup("POST"), handlers.HandleSignUp)
+	defaultCache := cacheSetup(defaultKeyGen)
+	app.Post("/logout", defaultCache, limiterSetup(10), corsSetup("POST"), handlers.HandleLogout)
+	app.Get("/signin", defaultCache, corsSetup("GET"), handlers.LoginRoute)
+	app.Get("/signup", defaultCache, corsSetup("GET"), handlers.SignUpRoute)
+	app.Get("/", defaultCache, handlers.HomeRoute)
+	app.Get("/search", defaultCache, corsSetup("GET"), handlers.SearchRoute)
+	cacheSearch := cacheSetup(searchKeyGen)
+	app.Post("/search/gateway", cacheSearch, limiterSetup(20), corsSetup("POST"), handlers.HandleSearchGateway)
 	app.Static("/static", "./static/")
 	app.Use(handlers.PageDoesNotExistRoute)
 	return app
