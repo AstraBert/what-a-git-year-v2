@@ -1,2 +1,3 @@
 .env
 test.html
+export_env_vars.sh

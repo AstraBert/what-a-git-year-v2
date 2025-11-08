@@ -131,7 +131,7 @@ func (c *GitYearClient) GetUserStats(user string) (*UserStats, error) {
 						Since:       oneYearAgo,
 						Until:       tomorrow,
 					}
-					repoCommits, _, err := ghClient.Repositories.ListCommits(context.Background(), user, *repo.FullName, optsCommits)
+					repoCommits, _, err := ghClient.Repositories.ListCommits(context.Background(), user, *repo.Name, optsCommits)
 					if err == nil {
 						totalCommits += len(repoCommits)
 					}
@@ -183,7 +183,7 @@ func (c *GitYearClient) GetOrgStats(organization string) (*OrgStats, error) {
 						Since:       oneYearAgo,
 						Until:       tomorrow,
 					}
-					repoCommits, _, err := ghClient.Repositories.ListCommits(context.Background(), organization, *repo.FullName, optsCommits)
+					repoCommits, _, err := ghClient.Repositories.ListCommits(context.Background(), organization, *repo.Name, optsCommits)
 					if err == nil {
 						totalCommits += len(repoCommits)
 					}

@@ -83,6 +83,7 @@ templ SearchInterface(authenticated bool) {
 									<button
 										type="submit"
 										class="btn btn-primary btn-lg join-item px-8"
+										id="inputButton"
 									>
 										<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -118,19 +119,26 @@ templ SearchInterface(authenticated bool) {
 									</button>
 								</div>
 							</div>
-							<br>
-            				<br>
 							<div id="loadingIndicator" class="htmx-indicator flex justify-center items-center">
 								<span class="loading loading-spinner loading-lg"></span>
 							</div>
 						</form>
 					</div>
-					<div id="searchResult">
+					<div id="searchResult" x-ref="searchResult" x-data>
     				</div>
 				</div>
 			</div>
 		</div>
 		
 		@Footer()
+		<script>
+			const inptBtn = document.getElementById("inputButton")
+			inptBtn.addEventListener("click", (ev) => {
+				const searchResults = document.getElementById("searchResult")
+				if (searchResults) {
+					searchResults.innerHTML = ""
+				}
+			})
+		</script>
 	</body>
 }
