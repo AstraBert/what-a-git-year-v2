@@ -12,3 +12,7 @@ RETURNING *;
 -- name: CleanCache :exec
 DELETE FROM cached
 WHERE datetime(created_at) < datetime('now', '-1 hour');
+
+-- name: CleanCacheTest :exec
+DELETE FROM cached
+WHERE datetime(created_at) < datetime('now', '-1 second');

@@ -11,9 +11,9 @@ import (
 
 type Cache interface {
 	GetDb() *sql.DB
-	Get(string, string) (string, error)
-	Set(string, string) error
-	Clean() error
+	Get(string, string) (*gh.UserStats, *gh.OrgStats, error)
+	Set(string, *gh.UserStats, *gh.OrgStats) error
+	Clean(string) error
 }
 
 type ApiCache struct {
@@ -26,7 +26,7 @@ func (c *ApiCache) GetDb() *sql.DB {
 }
 
 func (c *ApiCache) Get(key string, searchType string) (*gh.UserStats, *gh.OrgStats, error) {
-	c.Clean()
+	c.Clean("app")
 	ctx := context.Background()
 	queries := cacheutils.New(c.GetDb())
 	val, err := queries.GetStatsByKey(ctx, key)
@@ -53,10 +53,15 @@ func (c *ApiCache) Set(key string, userStats *gh.UserStats, orgStats *gh.OrgStat
 	}
 }
 
-func (c *ApiCache) Clean() error {
+func (c *ApiCache) Clean(mode string) error {
 	ctx := context.Background()
 	queries := cacheutils.New(c.GetDb())
-	return queries.CleanCache(ctx)
+	if mode == "test" {
+		return queries.CleanCacheTest(ctx)
+	} else {
+		return queries.CleanCache(ctx)
+	}
+
 }
 
 func NewApiCache(dbFile string) (*ApiCache, error) {

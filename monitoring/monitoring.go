@@ -6,7 +6,7 @@ import (
 
 type PosthogClient interface {
 	GetClient() (posthog.Client, error)
-	SendEvent(string, string, string, int64, bool) error
+	SendEvent(string, string, string, int64, bool, string) error
 }
 
 type PosthogMonitor struct {

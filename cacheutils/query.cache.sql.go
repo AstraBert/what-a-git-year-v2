@@ -20,6 +20,16 @@ func (q *Queries) CleanCache(ctx context.Context) error {
 	return err
 }
 
+const cleanCacheTest = `-- name: CleanCacheTest :exec
+DELETE FROM cached
+WHERE datetime(created_at) < datetime('now', '-1 second')
+`
+
+func (q *Queries) CleanCacheTest(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, cleanCacheTest)
+	return err
+}
+
 const getStatsByKey = `-- name: GetStatsByKey :one
 SELECT id, k, user, repositories, commits, stars, forks, avatar_url, top_repositories, topics, created_at
 FROM cached

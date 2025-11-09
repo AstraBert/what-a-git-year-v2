@@ -128,27 +128,42 @@ func HandleOrgSearch(c *fiber.Ctx) error {
 }
 
 func HomeRoute(c *fiber.Ctx) error {
+	if c.Method() != fiber.MethodGet {
+		return c.SendStatus(fiber.StatusMethodNotAllowed)
+	}
 	err := auth.AuthorizeGet(c)
 	c.Set("Content-Type", "text/html")
 	return templates.Home(err == nil).Render(c.Context(), c.Response().BodyWriter())
 }
 
 func LoginRoute(c *fiber.Ctx) error {
+	if c.Method() != fiber.MethodGet {
+		return c.SendStatus(fiber.StatusMethodNotAllowed)
+	}
 	c.Set("Content-Type", "text/html")
 	return templates.SignIn().Render(c.Context(), c.Response().BodyWriter())
 }
 
 func SignUpRoute(c *fiber.Ctx) error {
+	if c.Method() != fiber.MethodGet {
+		return c.SendStatus(fiber.StatusMethodNotAllowed)
+	}
 	c.Set("Content-Type", "text/html")
 	return templates.SignUp().Render(c.Context(), c.Response().BodyWriter())
 }
 
 func PageDoesNotExistRoute(c *fiber.Ctx) error {
+	if c.Method() != fiber.MethodGet {
+		return c.SendStatus(fiber.StatusMethodNotAllowed)
+	}
 	c.Set("Content-Type", "text/html")
 	return templates.Page404().Render(c.Context(), c.Response().BodyWriter())
 }
 
 func SearchRoute(c *fiber.Ctx) error {
+	if c.Method() != fiber.MethodGet {
+		return c.SendStatus(fiber.StatusMethodNotAllowed)
+	}
 	err := auth.AuthorizeGet(c)
 	c.Set("Content-Type", "text/html")
 	return templates.SearchInterface(err == nil).Render(c.Context(), c.Response().BodyWriter())
@@ -282,7 +297,9 @@ func HandleLogout(c *fiber.Ctx) error {
 }
 
 func HandleXPublish(c *fiber.Ctx) error {
-
+	if c.Method() != fiber.MethodGet {
+		return c.SendStatus(fiber.StatusMethodNotAllowed)
+	}
 	start := time.Now()
 	text := c.FormValue("xInput")
 	params := url.Values{}
@@ -296,7 +313,9 @@ func HandleXPublish(c *fiber.Ctx) error {
 }
 
 func HandleBskyPublish(c *fiber.Ctx) error {
-
+	if c.Method() != fiber.MethodGet {
+		return c.SendStatus(fiber.StatusMethodNotAllowed)
+	}
 	start := time.Now()
 	text := c.FormValue("bskyInput")
 	params := url.Values{}
