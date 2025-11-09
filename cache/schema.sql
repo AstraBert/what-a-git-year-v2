@@ -1,0 +1,14 @@
+-- cached table
+CREATE TABLE IF NOT EXISTS cached (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    k TEXT UNIQUE NOT NULL,
+    user TEXT NOT NULL,
+    repositories INTEGER NOT NULL DEFAULT 0,
+    commits INTEGER NOT NULL DEFAULT 0,
+    stars INTEGER NOT NULL DEFAULT 0,
+    forks INTEGER NOT NULL DEFAULT 0,
+    avatar_url TEXT NOT NULL,
+    top_repositories TEXT,
+    topics TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

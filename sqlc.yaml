@@ -8,3 +8,10 @@ sql:
         package: "db"
         out: "db"
         sql_package: "pgx/v5"
+  - engine: "sqlite"
+    queries: "query.cache.sql"
+    schema: "schema.cache.sql"
+    gen:
+      go:
+        package: "cacheutils"
+        out: "cacheutils"

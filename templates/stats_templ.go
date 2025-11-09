@@ -43,16 +43,30 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		statsText := fmt.Sprintf("🎉 What a Git Year I had!\nI created %s public repos, gained %d stars and %d forks and pushed %d public commits!", repos, stats.Stars, stats.Forks, stats.Commits)
 		followText := "\n➡️ Follow me on GitHub: github.com/" + stats.User
 		remainingSpace := 280 - len(statsText) - len(followText)
+		topRepos := []string{}
 		if len(stats.TopRepositories) != 0 {
-			repoText := "\n⭐ My top repositories are: " + strings.Join(stats.TopRepositories, ", ")
-			if (len(repoText) + len(statsText)) < remainingSpace {
-				statsText += repoText
+			for _, topRepo := range stats.TopRepositories {
+				topRepos = append(topRepos, topRepo)
+			}
+			if len(topRepos) > 0 {
+				repoText := "\n⭐ My top repositories are: " + strings.Join(topRepos, ", ")
+				if (len(repoText) + len(statsText)) < remainingSpace {
+					statsText += repoText
+				}
 			}
 		}
+		topics := []string{}
 		if len(stats.Topics) != 0 {
-			topicsText := "\n🔍 The topics I worked the most with are: " + strings.Join(stats.Topics, ", ")
-			if (len(topicsText) + len(statsText)) < remainingSpace {
-				statsText += topicsText
+			for _, topic := range stats.Topics {
+				if topic != "" {
+					topics = append(topics, topic)
+				}
+			}
+			if len(topics) > 0 {
+				topicsText := "\n🔍 The topics I worked the most with are: " + strings.Join(topics, ", ")
+				if (len(topicsText) + len(statsText)) < remainingSpace {
+					statsText += topicsText
+				}
 			}
 		}
 		statsText += followText
@@ -68,7 +82,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(stats.AvatarUrl)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 39, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 53, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -81,7 +95,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(stats.User)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 39, Col: 73}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 53, Col: 73}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -99,7 +113,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(stats.User)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 44, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 58, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -117,7 +131,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Repositories))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 54, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 68, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -135,7 +149,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Repositories))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 56, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 70, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -153,7 +167,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Commits))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 62, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 76, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -166,7 +180,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Stars))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 66, Col: 73}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 80, Col: 73}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -179,7 +193,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Forks))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 70, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 84, Col: 71}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -189,28 +203,30 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if len(stats.TopRepositories) > 0 {
+		if len(topRepos) > 0 {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div class=\"mb-4\"><h3 class=\"text-xl font-semibold mb-3\">Top Repositories🤩</h3><div class=\"flex flex-wrap gap-2\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, repo := range stats.TopRepositories {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<div class=\"badge badge-lg badge-outline\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var10 string
-				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(repo)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 80, Col: 55}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
+				if repo != "" {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<div class=\"badge badge-lg badge-outline\">")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var10 string
+					templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(repo)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 95, Col: 56}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
 			}
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div></div>")
@@ -222,28 +238,30 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if len(stats.Topics) > 0 {
+		if len(topics) > 0 {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div><h3 class=\"text-xl font-semibold mb-3\">Topics📊</h3><div class=\"flex flex-wrap gap-2\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, topic := range stats.Topics {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<div class=\"badge badge-primary\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var11 string
-				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(topic)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 92, Col: 47}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
+				if topic != "" {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<div class=\"badge badge-primary\">")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var11 string
+					templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(topic)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 109, Col: 48}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</div>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
 			}
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div></div>")
@@ -258,7 +276,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(statsText)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 105, Col: 47}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 123, Col: 47}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -271,7 +289,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(statsText)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 113, Col: 44}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 131, Col: 44}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
@@ -316,16 +334,30 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		statsText := fmt.Sprintf("🎉 What a Git Year we had!\nWe created %s public repos, gained %d stars and %d forks and pushed %d public commits!", repos, stats.Stars, stats.Forks, stats.Commits)
 		followText := "\n➡️ Follow us on GitHub: github.com/" + stats.Organization
 		remainingSpace := 280 - len(statsText) - len(followText)
+		topRepos := []string{}
 		if len(stats.TopRepositories) != 0 {
-			repoText := "\n⭐ Our top repositories are: " + strings.Join(stats.TopRepositories, ", ")
-			if (len(repoText) + len(statsText)) < remainingSpace {
-				statsText += repoText
+			for _, topRepo := range stats.TopRepositories {
+				topRepos = append(topRepos, topRepo)
+			}
+			if len(topRepos) > 0 {
+				repoText := "\n⭐ Our top repositories are: " + strings.Join(topRepos, ", ")
+				if (len(repoText) + len(statsText)) < remainingSpace {
+					statsText += repoText
+				}
 			}
 		}
+		topics := []string{}
 		if len(stats.Topics) != 0 {
-			topicsText := "\n🔍 The topics we worked the most with are: " + strings.Join(stats.Topics, ", ")
-			if (len(topicsText) + len(statsText)) < remainingSpace {
-				statsText += topicsText
+			for _, topic := range stats.Topics {
+				if topic != "" {
+					topics = append(topics, topic)
+				}
+			}
+			if len(topics) > 0 {
+				topicsText := "\n🔍 The topics we worked the most with are: " + strings.Join(topics, ", ")
+				if (len(topicsText) + len(statsText)) < remainingSpace {
+					statsText += topicsText
+				}
 			}
 		}
 		statsText += followText
@@ -341,7 +373,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(stats.AvatarUrl)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 155, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 187, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -354,7 +386,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(stats.Organization)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 155, Col: 81}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 187, Col: 81}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -372,7 +404,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(stats.Organization)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 160, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 192, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -385,7 +417,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var18 string
 		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Repositories))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 169, Col: 81}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 201, Col: 81}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 		if templ_7745c5c3_Err != nil {
@@ -398,7 +430,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var19 string
 		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Commits))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 173, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 205, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 		if templ_7745c5c3_Err != nil {
@@ -411,7 +443,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Stars))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 177, Col: 73}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 209, Col: 73}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -424,7 +456,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Forks))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 181, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 213, Col: 71}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -434,28 +466,30 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if len(stats.TopRepositories) > 0 {
+		if len(topRepos) > 0 {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<div class=\"mb-4\"><h3 class=\"text-xl font-semibold mb-3\">Top Repositories🤩</h3><div class=\"flex flex-wrap gap-2\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, repo := range stats.TopRepositories {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "<div class=\"badge badge-lg badge-outline\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var22 string
-				templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(repo)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 191, Col: 55}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
+				if repo != "" {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "<div class=\"badge badge-primary\">")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var22 string
+					templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(repo)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 224, Col: 47}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</div>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
 			}
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "</div></div>")
@@ -467,28 +501,30 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if len(stats.Topics) > 0 {
+		if len(topics) > 0 {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<div><h3 class=\"text-xl font-semibold mb-3\">Topics📊</h3><div class=\"flex flex-wrap gap-2\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			for _, topic := range stats.Topics {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "<div class=\"badge badge-primary\">")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var23 string
-				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(topic)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 203, Col: 47}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "</div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
+				if topic != "" {
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "<div class=\"badge badge-primary\">")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					var templ_7745c5c3_Var23 string
+					templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(topic)
+					if templ_7745c5c3_Err != nil {
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 238, Col: 48}
+					}
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "</div>")
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
 				}
 			}
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "</div></div>")
@@ -503,7 +539,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var24 string
 		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(statsText)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 216, Col: 47}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 252, Col: 47}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 		if templ_7745c5c3_Err != nil {
@@ -516,7 +552,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var25 string
 		templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(statsText)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 224, Col: 44}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 260, Col: 44}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 		if templ_7745c5c3_Err != nil {

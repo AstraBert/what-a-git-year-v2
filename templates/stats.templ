@@ -15,16 +15,30 @@ templ UserStatsDisplay(stats gh.UserStats) {
 		statsText := fmt.Sprintf("🎉 What a Git Year I had!\nI created %s public repos, gained %d stars and %d forks and pushed %d public commits!", repos, stats.Stars, stats.Forks, stats.Commits)
 		followText := "\n➡️ Follow me on GitHub: github.com/" + stats.User
 		remainingSpace := 280 - len(statsText) - len(followText)
+		topRepos := []string{}
 		if len(stats.TopRepositories) != 0 {
-			repoText := "\n⭐ My top repositories are: " + strings.Join(stats.TopRepositories, ", ")
-			if (len(repoText) + len(statsText)) < remainingSpace {
-				statsText += repoText
+			for _, topRepo := range stats.TopRepositories {
+				topRepos = append(topRepos, topRepo)
+			}
+			if len(topRepos) > 0 {
+				repoText := "\n⭐ My top repositories are: " + strings.Join(topRepos, ", ")
+				if (len(repoText) + len(statsText)) < remainingSpace {
+					statsText += repoText
+				}
 			}
 		}
+		topics := []string{}
 		if len(stats.Topics) != 0 {
-			topicsText := "\n🔍 The topics I worked the most with are: " + strings.Join(stats.Topics, ", ")
-			if (len(topicsText) + len(statsText)) < remainingSpace {
-				statsText += topicsText
+			for _, topic := range stats.Topics {
+				if topic != "" {
+					topics = append(topics, topic)
+				}
+			}
+			if len(topics) > 0 {
+				topicsText := "\n🔍 The topics I worked the most with are: " + strings.Join(topics, ", ")
+				if (len(topicsText) + len(statsText)) < remainingSpace {
+					statsText += topicsText
+				}
 			}
 		}
 		statsText += followText
@@ -72,24 +86,28 @@ templ UserStatsDisplay(stats gh.UserStats) {
 			</div>
 			
 			<!-- Top Repositories -->
-			if len(stats.TopRepositories) > 0 {
+			if len(topRepos) > 0 {
 				<div class="mb-4">
 					<h3 class="text-xl font-semibold mb-3">Top Repositories🤩</h3>
 					<div class="flex flex-wrap gap-2">
 						for _, repo := range stats.TopRepositories {
-							<div class="badge badge-lg badge-outline">{ repo }</div>
+							if repo != "" {
+								<div class="badge badge-lg badge-outline">{ repo }</div>
+							}
 						}
 					</div>
 				</div>
 			}
 			
 			<!-- Topics -->
-			if len(stats.Topics) > 0 {
+			if len(topics) > 0 {
 				<div>
 					<h3 class="text-xl font-semibold mb-3">Topics📊</h3>
 					<div class="flex flex-wrap gap-2">
 						for _, topic := range stats.Topics {
-							<div class="badge badge-primary">{ topic }</div>
+							if topic != "" {
+								<div class="badge badge-primary">{ topic }</div>
+							}
 						}
 					</div>
 				</div>
@@ -131,16 +149,30 @@ templ OrgStatsDisplay(stats gh.OrgStats) {
 		statsText := fmt.Sprintf("🎉 What a Git Year we had!\nWe created %s public repos, gained %d stars and %d forks and pushed %d public commits!", repos, stats.Stars, stats.Forks, stats.Commits)
 		followText := "\n➡️ Follow us on GitHub: github.com/" + stats.Organization
 		remainingSpace := 280 - len(statsText) - len(followText)
+		topRepos := []string{}
 		if len(stats.TopRepositories) != 0 {
-			repoText := "\n⭐ Our top repositories are: " + strings.Join(stats.TopRepositories, ", ")
-			if (len(repoText) + len(statsText)) < remainingSpace {
-				statsText += repoText
+			for _, topRepo := range stats.TopRepositories {
+				topRepos = append(topRepos, topRepo)
+			}
+			if len(topRepos) > 0 {
+				repoText := "\n⭐ Our top repositories are: " + strings.Join(topRepos, ", ")
+				if (len(repoText) + len(statsText)) < remainingSpace {
+					statsText += repoText
+				}
 			}
 		}
+		topics := []string{}
 		if len(stats.Topics) != 0 {
-			topicsText := "\n🔍 The topics we worked the most with are: " + strings.Join(stats.Topics, ", ")
-			if (len(topicsText) + len(statsText)) < remainingSpace {
-				statsText += topicsText
+			for _, topic := range stats.Topics {
+				if topic != "" {
+					topics = append(topics, topic)
+				}
+			}
+			if len(topics) > 0 {
+				topicsText := "\n🔍 The topics we worked the most with are: " + strings.Join(topics, ", ")
+				if (len(topicsText) + len(statsText)) < remainingSpace {
+					statsText += topicsText
+				}
 			}
 		}
 		statsText += followText
@@ -183,24 +215,28 @@ templ OrgStatsDisplay(stats gh.OrgStats) {
 			</div>
 			
 			<!-- Top Repositories -->
-			if len(stats.TopRepositories) > 0 {
+			if len(topRepos) > 0 {
 				<div class="mb-4">
 					<h3 class="text-xl font-semibold mb-3">Top Repositories🤩</h3>
 					<div class="flex flex-wrap gap-2">
 						for _, repo := range stats.TopRepositories {
-							<div class="badge badge-lg badge-outline">{ repo }</div>
+							if repo != "" {
+								<div class="badge badge-primary">{ repo }</div>
+							}
 						}
 					</div>
 				</div>
 			}
 			
 			<!-- Topics -->
-			if len(stats.Topics) > 0 {
+			if len(topics) > 0 {
 				<div>
 					<h3 class="text-xl font-semibold mb-3">Topics📊</h3>
 					<div class="flex flex-wrap gap-2">
 						for _, topic := range stats.Topics {
-							<div class="badge badge-primary">{ topic }</div>
+							if topic != "" {
+								<div class="badge badge-primary">{ topic }</div>
+							}
 						}
 					</div>
 				</div>

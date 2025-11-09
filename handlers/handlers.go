@@ -13,38 +13,18 @@ import (
 	"time"
 
 	"github.com/AstraBert/what-a-git-year-v2/auth"
+	"github.com/AstraBert/what-a-git-year-v2/cache"
 	"github.com/AstraBert/what-a-git-year-v2/db"
 	"github.com/AstraBert/what-a-git-year-v2/gh"
 	"github.com/AstraBert/what-a-git-year-v2/monitoring"
 	"github.com/AstraBert/what-a-git-year-v2/templates"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cache"
-	"github.com/gofiber/storage/sqlite3"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 var phMonitor *monitoring.PosthogMonitor = monitoring.NewPosthogMonitor(os.Getenv("POSTHOG_API_KEY"), os.Getenv("POSTHOG_ENDPOINT"))
 var ghClient *gh.GitYearClient = gh.NewGitYearClient(os.Getenv("GITHUB_AUTH_TOKEN"))
-var cacheHandler fiber.Handler = cache.New(
-	cache.Config{
-		Expiration:   1 * time.Hour,
-		CacheControl: true,
-		Storage: sqlite3.New(
-			sqlite3.Config{
-				Database:        "cache_search.db",
-				Table:           os.Getenv("CACHE_TABLE"),
-				ConnMaxLifetime: 5 * time.Second,
-			},
-		),
-		KeyGenerator: func(c *fiber.Ctx) string {
-			val := sha256.Sum256([]byte(c.FormValue("search-input")))
-			val1 := sha256.Sum256([]byte(c.FormValue("search-type")))
-			return hex.EncodeToString(val[:]) + ":" + hex.EncodeToString(val1[:])
-		},
-		Methods: []string{fiber.MethodPost},
-	},
-)
 
 func HandleSearchGateway(c *fiber.Ctx) error {
 	searchType := c.FormValue("search-type")
@@ -55,12 +35,32 @@ func HandleSearchGateway(c *fiber.Ctx) error {
 	}
 }
 
+func generateKey(searchType, searchInput string) string {
+	val := sha256.Sum256([]byte(searchType))
+	val1 := sha256.Sum256([]byte(searchInput))
+	return hex.EncodeToString(val[:]) + ":" + hex.EncodeToString(val1[:])
+}
+
 func HandleUserSearch(c *fiber.Ctx) error {
-	if err := cacheHandler(c); err != nil {
-		return err
-	}
 	value := c.FormValue("search-input")
 	start := time.Now()
+	apiCache, err := cache.NewApiCache("cache_search.db")
+	errNoRows := false
+	if err == nil {
+		user, _, err := apiCache.Get(generateKey("user", value), "user")
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				errNoRows = true
+			}
+		} else {
+			errPh := phMonitor.SendEvent("user:"+value, "ghSearch", "userSearchCached", time.Since(start).Milliseconds(), false, "")
+			if errPh != nil {
+				log.Println("PostHog failed to record event")
+			}
+			c.Set("Content-Type", "text/html")
+			return templates.UserStatsDisplay(*user).Render(c.Context(), c.Response().BodyWriter())
+		}
+	}
 	stats, err := ghClient.GetUserStats(value)
 	end := time.Now()
 	latency := end.Sub(start).Milliseconds()
@@ -76,6 +76,9 @@ func HandleUserSearch(c *fiber.Ctx) error {
 	if errPh != nil {
 		log.Println("PostHog failed to record event")
 	}
+	if errNoRows {
+		apiCache.Set(generateKey("user", value), stats, nil)
+	}
 	return templates.UserStatsDisplay(*stats).Render(c.Context(), c.Response().BodyWriter())
 }
 
@@ -84,11 +87,25 @@ func HandleOrgSearch(c *fiber.Ctx) error {
 	if err != nil {
 		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 	}
-	if err := cacheHandler(c); err != nil {
-		return err
-	}
 	value := c.FormValue("search-input")
 	start := time.Now()
+	apiCache, err := cache.NewApiCache("cache_search.db")
+	errNoRows := false
+	if err == nil {
+		_, org, err := apiCache.Get(generateKey("org", value), "org")
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				errNoRows = true
+			}
+		} else {
+			errPh := phMonitor.SendEvent("org:"+value, "ghSearch", "orgSearchCached", time.Since(start).Milliseconds(), false, "")
+			if errPh != nil {
+				log.Println("PostHog failed to record event")
+			}
+			c.Set("Content-Type", "text/html")
+			return templates.OrgStatsDisplay(*org).Render(c.Context(), c.Response().BodyWriter())
+		}
+	}
 	stats, err := ghClient.GetOrgStats(value)
 	end := time.Now()
 	latency := end.Sub(start).Milliseconds()
@@ -103,6 +120,9 @@ func HandleOrgSearch(c *fiber.Ctx) error {
 	errPh := phMonitor.SendEvent("org:"+value, "ghSearch", "orgSearch", latency, false, "")
 	if errPh != nil {
 		log.Println("PostHog failed to record event")
+	}
+	if errNoRows {
+		apiCache.Set(generateKey("org", value), nil, stats)
 	}
 	return templates.OrgStatsDisplay(*stats).Render(c.Context(), c.Response().BodyWriter())
 }
