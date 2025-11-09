@@ -305,7 +305,6 @@ func HandleLogin(c *fiber.Ctx) error {
 }
 
 func HandleLogout(c *fiber.Ctx) error {
-
 	start := time.Now()
 	user, err := auth.AuthorizePost(c)
 	if err != nil {

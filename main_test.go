@@ -189,3 +189,72 @@ func TestPublishSocialBsky(t *testing.T) {
 		t.Logf("Got redirect URL: %s", redirectURL)
 	}
 }
+
+func TestSearchGateway(t *testing.T) {
+	_, okGh := os.LookupEnv("GITHUB_AUTH_TOKEN")
+	_, okPhApi := os.LookupEnv("POSTHOG_API_KEY")
+	_, okEnd := os.LookupEnv("POSTHOG_ENDPOINT")
+	if !okGh || !okPhApi || !okEnd {
+		t.Skip()
+	} else {
+		app := Setup()
+		req := httptest.NewRequest("POST", "/search/gateway?search-input=torvalds&search-type=user", nil)
+		res, err := app.Test(req)
+		if err != nil {
+			t.Errorf("No error expected while creating the response, got %s", err.Error())
+		}
+		body := res.Body
+		defer func() { _ = body.Close() }()
+		data, err := io.ReadAll(body)
+		if err != nil {
+			t.Errorf("Not expecting any error while reading response body, got %s", err.Error())
+		}
+		if !strings.Contains(string(data), "What a Git Year you had!🎉") {
+			t.Error("Unexpected body in response")
+		}
+		req = httptest.NewRequest("POST", "/search/gateway?search-input=run-llama&search-type=org", nil)
+		res, err = app.Test(req)
+		if err != nil {
+			t.Errorf("No error expected while creating the response, got %s", err.Error())
+		}
+		body = res.Body
+		defer func() { _ = body.Close() }()
+		data, err = io.ReadAll(body)
+		if err != nil {
+			t.Errorf("Not expecting any error while reading response body, got %s", err.Error())
+		}
+		if !strings.Contains(string(data), "unauthorized") {
+			t.Error("Unexpected body in response")
+		}
+	}
+}
+
+func TestAuth(t *testing.T) {
+	_, okPg := os.LookupEnv("POSTGRES_CONNECTION_STRING")
+	_, okPhApi := os.LookupEnv("POSTHOG_API_KEY")
+	_, okEnd := os.LookupEnv("POSTHOG_ENDPOINT")
+	if !okPg || !okPhApi || !okEnd {
+		t.Skip()
+	} else {
+		app := Setup()
+		req := httptest.NewRequest("POST", "/logout", nil)
+		res, err := app.Test(req)
+		if err != nil {
+			t.Errorf("No error expected while creating the response, got %s", err.Error())
+		}
+		if res.StatusCode != 500 {
+			t.Errorf("Expecting the endpoint to fail with 500 status code, got %d", res.StatusCode)
+		}
+		req = httptest.NewRequest("POST", "/login?user=hello&password=hello", nil)
+		res, err = app.Test(req)
+		if err != nil {
+			t.Errorf("No error expected while creating the response, got %s", err.Error())
+		}
+		body := res.Body
+		defer func() { _ = body.Close() }()
+		data, _ := io.ReadAll(body)
+		if !strings.Contains(string(data), "An error occurred:") {
+			t.Error("Unexpected response body")
+		}
+	}
+}
