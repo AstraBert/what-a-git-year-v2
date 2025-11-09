@@ -19,7 +19,7 @@ func TestHomeRoute(t *testing.T) {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
 	body := resp.Body
-	defer body.Close()
+	defer func() { _ = body.Close() }()
 	data, err := io.ReadAll(body)
 	if err != nil {
 		t.Errorf("Not expecting error while reading response body, got %s", err.Error())
@@ -27,7 +27,7 @@ func TestHomeRoute(t *testing.T) {
 	if !strings.Contains(string(data), "Get statistics about your (or your organization's) GitHub activity in the past year, share them with others and get inspired to build more!") {
 		t.Error("Unexpected body in response")
 	}
-	req, err = http.NewRequest("POST", "/", nil)
+	req, _ = http.NewRequest("POST", "/", nil)
 	resp, err = app.Test(req)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
@@ -48,7 +48,7 @@ func TestSigninRoute(t *testing.T) {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
 	body := resp.Body
-	defer body.Close()
+	defer func() { _ = body.Close() }()
 	data, err := io.ReadAll(body)
 	if err != nil {
 		t.Errorf("Not expecting error while reading response body, got %s", err.Error())
@@ -56,7 +56,7 @@ func TestSigninRoute(t *testing.T) {
 	if !strings.Contains(string(data), "Don't have an account?") {
 		t.Error("Unexpected body in response")
 	}
-	req, err = http.NewRequest("POST", "/signin", nil)
+	req, _ = http.NewRequest("POST", "/signin", nil)
 	resp, err = app.Test(req)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
@@ -77,7 +77,7 @@ func TestSignUpRoute(t *testing.T) {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
 	body := resp.Body
-	defer body.Close()
+	defer func() { _ = body.Close() }()
 	data, err := io.ReadAll(body)
 	if err != nil {
 		t.Errorf("Not expecting error while reading response body, got %s", err.Error())
@@ -85,7 +85,7 @@ func TestSignUpRoute(t *testing.T) {
 	if !strings.Contains(string(data), "Already have an account?") {
 		t.Error("Unexpected body in response")
 	}
-	req, err = http.NewRequest("POST", "/signup", nil)
+	req, _ = http.NewRequest("POST", "/signup", nil)
 	resp, err = app.Test(req)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
@@ -106,7 +106,7 @@ func TestSearchoute(t *testing.T) {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
 	body := resp.Body
-	defer body.Close()
+	defer func() { _ = body.Close() }()
 	data, err := io.ReadAll(body)
 	if err != nil {
 		t.Errorf("Not expecting error while reading response body, got %s", err.Error())
@@ -114,7 +114,7 @@ func TestSearchoute(t *testing.T) {
 	if !strings.Contains(string(data), "Discover the treasures in your GitHub journey!") {
 		t.Error("Unexpected body in response")
 	}
-	req, err = http.NewRequest("POST", "/search", nil)
+	req, _ = http.NewRequest("POST", "/search", nil)
 	resp, err = app.Test(req)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
@@ -135,7 +135,7 @@ func Test404Route(t *testing.T) {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
 	body := resp.Body
-	defer body.Close()
+	defer func() { _ = body.Close() }()
 	data, err := io.ReadAll(body)
 	if err != nil {
 		t.Errorf("Not expecting error while reading response body, got %s", err.Error())

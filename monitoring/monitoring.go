@@ -24,7 +24,7 @@ func (p *PosthogMonitor) SendEvent(uniqueId, eventCategory, eventType string, la
 	if err != nil {
 		return err
 	}
-	defer client.Close()
+	defer func() { _ = client.Close() }()
 	err = client.Enqueue(
 		posthog.Capture{
 			DistinctId: uniqueId,

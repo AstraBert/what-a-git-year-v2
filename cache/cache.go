@@ -26,7 +26,7 @@ func (c *ApiCache) GetDb() *sql.DB {
 }
 
 func (c *ApiCache) Get(key string, searchType string) (*gh.UserStats, *gh.OrgStats, error) {
-	c.Clean("app")
+	_ = c.Clean("app")
 	ctx := context.Background()
 	queries := cacheutils.New(c.GetDb())
 	val, err := queries.GetStatsByKey(ctx, key)

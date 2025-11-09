@@ -10,5 +10,5 @@ func TestCreateDb(t *testing.T) {
 	if err != nil {
 		t.Errorf("Not expecting an error when creating a new database instance, got %s", err.Error())
 	}
-	os.Remove("cache_test.db")
+	_ = os.Remove("cache_test.db")
 }
