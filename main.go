@@ -100,11 +100,6 @@ func limiterSetup(reqPerMinute int) fiber.Handler {
 
 func Setup() *fiber.App {
 	app := fiber.New()
-	searchKeyGen := func(c *fiber.Ctx) string {
-		val := sha256.Sum256([]byte(c.FormValue("search-input")))
-		val1 := sha256.Sum256([]byte(c.FormValue("search-type")))
-		return hex.EncodeToString(val[:]) + ":" + hex.EncodeToString(val1[:])
-	}
 	authKeyGen := func(c *fiber.Ctx) string {
 		usr := c.FormValue("username")
 		psw := c.FormValue("password")
@@ -128,8 +123,7 @@ func Setup() *fiber.App {
 	app.Get("/search", defaultCache, corsSetup("GET"), handlers.SearchRoute)
 	app.Get("/urls/x", limiterSetup(10), corsSetup("GET"), handlers.HandleXPublish)
 	app.Get("/urls/bsky", limiterSetup(10), corsSetup("GET"), handlers.HandleBskyPublish)
-	cacheSearch := cacheSetupPost(searchKeyGen)
-	app.Post("/search/gateway", cacheSearch, limiterSetup(20), corsSetup("POST"), handlers.HandleSearchGateway)
+	app.Post("/search/gateway", limiterSetup(20), corsSetup("POST"), handlers.HandleSearchGateway)
 	app.Static("/static", "./static/")
 	app.Use(handlers.PageDoesNotExistRoute)
 	return app

@@ -6,14 +6,28 @@ import "github.com/AstraBert/what-a-git-year-v2/gh"
 
 templ UserStatsDisplay(stats gh.UserStats) {
 	{{
-		statsText := fmt.Sprintf("What a Git Year I had!\nI created %d public repos, gained %d stars and %d forks and pushed %d public commits!", stats.Repositories, stats.Stars, stats.Forks, stats.Commits)
+		repos := ""
+		if stats.Repositories < 100 {
+			repos = fmt.Sprintf("%d", stats.Repositories)
+		} else {
+			repos = fmt.Sprintf("%d+", 100)
+		}
+		statsText := fmt.Sprintf("🎉 What a Git Year I had!\nI created %s public repos, gained %d stars and %d forks and pushed %d public commits!", repos, stats.Stars, stats.Forks, stats.Commits)
+		followText := "\n➡️ Follow me on GitHub: github.com/" + stats.User
+		remainingSpace := 280 - len(statsText) - len(followText)
 		if len(stats.TopRepositories) != 0 {
-			statsText += "\nMy top repositories are: " + strings.Join(stats.TopRepositories, ", ")
+			repoText := "\n⭐ My top repositories are: " + strings.Join(stats.TopRepositories, ", ")
+			if (len(repoText) + len(statsText)) < remainingSpace {
+				statsText += repoText
+			}
 		}
 		if len(stats.Topics) != 0 {
-			statsText += "\nThe topics I worked the most with are: " + strings.Join(stats.Topics, ", ")
+			topicsText := "\n🔍 The topics I worked the most with are: " + strings.Join(stats.Topics, ", ")
+			if (len(topicsText) + len(statsText)) < remainingSpace {
+				statsText += topicsText
+			}
 		}
-		statsText += "\nFollow me on GitHub: github.com/" + stats.User
+		statsText += followText
 	}}
 	<div class="card bg-base-200 shadow-xl" x-data>
 		<div class="card-body">
@@ -107,6 +121,30 @@ templ UserStatsDisplay(stats gh.UserStats) {
 }
 
 templ OrgStatsDisplay(stats gh.OrgStats) {
+	{{
+		repos := ""
+		if stats.Repositories < 100 {
+			repos = fmt.Sprintf("%d", stats.Repositories)
+		} else {
+			repos = fmt.Sprintf("%d+", 100)
+		}
+		statsText := fmt.Sprintf("🎉 What a Git Year we had!\nWe created %s public repos, gained %d stars and %d forks and pushed %d public commits!", repos, stats.Stars, stats.Forks, stats.Commits)
+		followText := "\n➡️ Follow us on GitHub: github.com/" + stats.Organization
+		remainingSpace := 280 - len(statsText) - len(followText)
+		if len(stats.TopRepositories) != 0 {
+			repoText := "\n⭐ Our top repositories are: " + strings.Join(stats.TopRepositories, ", ")
+			if (len(repoText) + len(statsText)) < remainingSpace {
+				statsText += repoText
+			}
+		}
+		if len(stats.Topics) != 0 {
+			topicsText := "\n🔍 The topics we worked the most with are: " + strings.Join(stats.Topics, ", ")
+			if (len(topicsText) + len(statsText)) < remainingSpace {
+				statsText += topicsText
+			}
+		}
+		statsText += followText
+	}}
 	<div class="card bg-base-200 shadow-xl">
 		<div class="card-body">
 			<!-- Header with Avatar and Organization Name -->
@@ -174,5 +212,21 @@ templ OrgStatsDisplay(stats gh.OrgStats) {
 			@click="$refs.searchResult.innerHTML = ''"
 			x-ref="clearButton"
 		>Clear</button>
+		<form hx-get="/urls/bsky" hx-trigger="submit">
+			<textarea name="bskyInput" hidden>{statsText}</textarea>
+			<button
+				class="btn btn-primary btn-lg bg-blue-300 text-black shadow-sm w-full"
+				type="submit"
+			>
+			Share on BlueSky</button>
+		</form>
+		<form hx-get="/urls/x" hx-trigger="submit">
+			<textarea name="xInput" hidden>{statsText}</textarea>
+			<button
+				class="btn btn-primary btn-lg bg-black text-white shadow-sm w-full"
+				type="submit"
+			>
+			Share on X</button>
+		</form>
 	</div>
 }

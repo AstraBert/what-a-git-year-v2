@@ -3,3 +3,4 @@ test.html
 export_env_vars.sh
 ratelimiter.db
 cache*.db
+tmp/

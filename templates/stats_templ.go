@@ -34,14 +34,28 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 
-		statsText := fmt.Sprintf("What a Git Year I had!\nI created %d public repos, gained %d stars and %d forks and pushed %d public commits!", stats.Repositories, stats.Stars, stats.Forks, stats.Commits)
+		repos := ""
+		if stats.Repositories < 100 {
+			repos = fmt.Sprintf("%d", stats.Repositories)
+		} else {
+			repos = fmt.Sprintf("%d+", 100)
+		}
+		statsText := fmt.Sprintf("🎉 What a Git Year I had!\nI created %s public repos, gained %d stars and %d forks and pushed %d public commits!", repos, stats.Stars, stats.Forks, stats.Commits)
+		followText := "\n➡️ Follow me on GitHub: github.com/" + stats.User
+		remainingSpace := 280 - len(statsText) - len(followText)
 		if len(stats.TopRepositories) != 0 {
-			statsText += "\nMy top repositories are: " + strings.Join(stats.TopRepositories, ", ")
+			repoText := "\n⭐ My top repositories are: " + strings.Join(stats.TopRepositories, ", ")
+			if (len(repoText) + len(statsText)) < remainingSpace {
+				statsText += repoText
+			}
 		}
 		if len(stats.Topics) != 0 {
-			statsText += "\nThe topics I worked the most with are: " + strings.Join(stats.Topics, ", ")
+			topicsText := "\n🔍 The topics I worked the most with are: " + strings.Join(stats.Topics, ", ")
+			if (len(topicsText) + len(statsText)) < remainingSpace {
+				statsText += topicsText
+			}
 		}
-		statsText += "\nFollow me on GitHub: github.com/" + stats.User
+		statsText += followText
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"card bg-base-200 shadow-xl\" x-data><div class=\"card-body\"><!-- Header with Avatar and Username --><div class=\"flex items-center gap-4 mb-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -54,7 +68,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(stats.AvatarUrl)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 25, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 39, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -67,7 +81,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(stats.User)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 25, Col: 73}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 39, Col: 73}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -85,7 +99,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(stats.User)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 30, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 44, Col: 49}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -103,7 +117,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Repositories))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 40, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 54, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -121,7 +135,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Repositories))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 42, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 56, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -139,7 +153,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Commits))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 48, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 62, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -152,7 +166,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Stars))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 52, Col: 73}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 66, Col: 73}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -165,7 +179,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Forks))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 56, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 70, Col: 71}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -188,7 +202,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(repo)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 66, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 80, Col: 55}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -221,7 +235,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(topic)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 78, Col: 47}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 92, Col: 47}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -244,7 +258,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(statsText)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 91, Col: 47}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 105, Col: 47}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -257,7 +271,7 @@ func UserStatsDisplay(stats gh.UserStats) templ.Component {
 		var templ_7745c5c3_Var13 string
 		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(statsText)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 99, Col: 44}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 113, Col: 44}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
@@ -292,6 +306,29 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 			templ_7745c5c3_Var14 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
+
+		repos := ""
+		if stats.Repositories < 100 {
+			repos = fmt.Sprintf("%d", stats.Repositories)
+		} else {
+			repos = fmt.Sprintf("%d+", 100)
+		}
+		statsText := fmt.Sprintf("🎉 What a Git Year we had!\nWe created %s public repos, gained %d stars and %d forks and pushed %d public commits!", repos, stats.Stars, stats.Forks, stats.Commits)
+		followText := "\n➡️ Follow us on GitHub: github.com/" + stats.Organization
+		remainingSpace := 280 - len(statsText) - len(followText)
+		if len(stats.TopRepositories) != 0 {
+			repoText := "\n⭐ Our top repositories are: " + strings.Join(stats.TopRepositories, ", ")
+			if (len(repoText) + len(statsText)) < remainingSpace {
+				statsText += repoText
+			}
+		}
+		if len(stats.Topics) != 0 {
+			topicsText := "\n🔍 The topics we worked the most with are: " + strings.Join(stats.Topics, ", ")
+			if (len(topicsText) + len(statsText)) < remainingSpace {
+				statsText += topicsText
+			}
+		}
+		statsText += followText
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div class=\"card bg-base-200 shadow-xl\"><div class=\"card-body\"><!-- Header with Avatar and Organization Name --><div class=\"flex items-center gap-4 mb-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -304,7 +341,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(stats.AvatarUrl)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 117, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 155, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -317,7 +354,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(stats.Organization)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 117, Col: 81}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 155, Col: 81}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -335,7 +372,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(stats.Organization)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 122, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 160, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -348,7 +385,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var18 string
 		templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Repositories))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 131, Col: 81}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 169, Col: 81}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 		if templ_7745c5c3_Err != nil {
@@ -361,7 +398,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var19 string
 		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Commits))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 135, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 173, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 		if templ_7745c5c3_Err != nil {
@@ -374,7 +411,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Stars))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 139, Col: 73}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 177, Col: 73}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -387,7 +424,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", stats.Forks))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 143, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 181, Col: 71}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -410,7 +447,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 				var templ_7745c5c3_Var22 string
 				templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(repo)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 153, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 191, Col: 55}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 				if templ_7745c5c3_Err != nil {
@@ -443,7 +480,7 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 				var templ_7745c5c3_Var23 string
 				templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(topic)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 165, Col: 47}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 203, Col: 47}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 				if templ_7745c5c3_Err != nil {
@@ -459,7 +496,33 @@ func OrgStatsDisplay(stats gh.OrgStats) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</div><br><button class=\"btn btn-primary btn-lg\" @click=\"$refs.searchResult.innerHTML = ''\" x-ref=\"clearButton\">Clear</button></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</div><br><button class=\"btn btn-primary btn-lg\" @click=\"$refs.searchResult.innerHTML = ''\" x-ref=\"clearButton\">Clear</button><form hx-get=\"/urls/bsky\" hx-trigger=\"submit\"><textarea name=\"bskyInput\" hidden>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var24 string
+		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(statsText)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 216, Col: 47}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "</textarea> <button class=\"btn btn-primary btn-lg bg-blue-300 text-black shadow-sm w-full\" type=\"submit\">Share on BlueSky</button></form><form hx-get=\"/urls/x\" hx-trigger=\"submit\"><textarea name=\"xInput\" hidden>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var25 string
+		templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(statsText)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/stats.templ`, Line: 224, Col: 44}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "</textarea> <button class=\"btn btn-primary btn-lg bg-black text-white shadow-sm w-full\" type=\"submit\">Share on X</button></form></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

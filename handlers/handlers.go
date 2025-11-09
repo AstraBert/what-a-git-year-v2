@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
@@ -16,25 +18,33 @@ import (
 	"github.com/AstraBert/what-a-git-year-v2/monitoring"
 	"github.com/AstraBert/what-a-git-year-v2/templates"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cache"
+	"github.com/gofiber/storage/sqlite3"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func configurePosthog() *monitoring.PosthogMonitor {
-	phApiKey := os.Getenv("POSTHOG_API_KEY")
-	phEndpoint := os.Getenv("POSTHOG_ENDPOINT")
-	return monitoring.NewPosthogMonitor(phApiKey, phEndpoint)
-
-}
-
-func configurePosthogAndGitHub() (*monitoring.PosthogMonitor, *gh.GitYearClient) {
-	token := os.Getenv("GITHUB_AUTH_TOKEN")
-	ghClient := gh.NewGitYearClient(token)
-	phApiKey := os.Getenv("POSTHOG_API_KEY")
-	phEndpoint := os.Getenv("POSTHOG_ENDPOINT")
-	phMonitor := monitoring.NewPosthogMonitor(phApiKey, phEndpoint)
-	return phMonitor, ghClient
-}
+var phMonitor *monitoring.PosthogMonitor = monitoring.NewPosthogMonitor(os.Getenv("POSTHOG_API_KEY"), os.Getenv("POSTHOG_ENDPOINT"))
+var ghClient *gh.GitYearClient = gh.NewGitYearClient(os.Getenv("GITHUB_AUTH_TOKEN"))
+var cacheHandler fiber.Handler = cache.New(
+	cache.Config{
+		Expiration:   1 * time.Hour,
+		CacheControl: true,
+		Storage: sqlite3.New(
+			sqlite3.Config{
+				Database:        "cache_search.db",
+				Table:           os.Getenv("CACHE_TABLE"),
+				ConnMaxLifetime: 5 * time.Second,
+			},
+		),
+		KeyGenerator: func(c *fiber.Ctx) string {
+			val := sha256.Sum256([]byte(c.FormValue("search-input")))
+			val1 := sha256.Sum256([]byte(c.FormValue("search-type")))
+			return hex.EncodeToString(val[:]) + ":" + hex.EncodeToString(val1[:])
+		},
+		Methods: []string{fiber.MethodPost},
+	},
+)
 
 func HandleSearchGateway(c *fiber.Ctx) error {
 	searchType := c.FormValue("search-type")
@@ -46,8 +56,9 @@ func HandleSearchGateway(c *fiber.Ctx) error {
 }
 
 func HandleUserSearch(c *fiber.Ctx) error {
-	uniqueSearchId, _ := auth.GenerateToken(16)
-	phMonitor, ghClient := configurePosthogAndGitHub()
+	if err := cacheHandler(c); err != nil {
+		return err
+	}
 	value := c.FormValue("search-input")
 	start := time.Now()
 	stats, err := ghClient.GetUserStats(value)
@@ -55,13 +66,13 @@ func HandleUserSearch(c *fiber.Ctx) error {
 	latency := end.Sub(start).Milliseconds()
 	c.Set("Content-Type", "text/html")
 	if err != nil {
-		errPh := phMonitor.SendEvent(uniqueSearchId, "ghSearch", "userSearch", latency, true, err.Error())
+		errPh := phMonitor.SendEvent("user:"+value, "ghSearch", "userSearch", latency, true, err.Error())
 		if errPh != nil {
 			log.Println("PostHog failed to record event")
 		}
 		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 	}
-	errPh := phMonitor.SendEvent(uniqueSearchId, "ghSearch", "userSearch", latency, false, "")
+	errPh := phMonitor.SendEvent("user:"+value, "ghSearch", "userSearch", latency, false, "")
 	if errPh != nil {
 		log.Println("PostHog failed to record event")
 	}
@@ -73,22 +84,23 @@ func HandleOrgSearch(c *fiber.Ctx) error {
 	if err != nil {
 		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 	}
-	uniqueSearchId, _ := auth.GenerateToken(16)
+	if err := cacheHandler(c); err != nil {
+		return err
+	}
 	value := c.FormValue("search-input")
-	phMonitor, ghClient := configurePosthogAndGitHub()
 	start := time.Now()
 	stats, err := ghClient.GetOrgStats(value)
 	end := time.Now()
 	latency := end.Sub(start).Milliseconds()
 	c.Set("Content-Type", "text/html")
 	if err != nil {
-		errPh := phMonitor.SendEvent(uniqueSearchId, "ghSearch", "orgSearch", latency, true, err.Error())
+		errPh := phMonitor.SendEvent("org:"+value, "ghSearch", "orgSearch", latency, true, err.Error())
 		if errPh != nil {
 			log.Println("PostHog failed to record event")
 		}
 		return templates.StatusBanner(err).Render(c.Context(), c.Response().BodyWriter())
 	}
-	errPh := phMonitor.SendEvent(uniqueSearchId, "ghSearch", "orgSearch", latency, false, "")
+	errPh := phMonitor.SendEvent("org:"+value, "ghSearch", "orgSearch", latency, false, "")
 	if errPh != nil {
 		log.Println("PostHog failed to record event")
 	}
@@ -130,7 +142,6 @@ func HandleSignUp(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 	ctx := context.Background()
-	phMonitor := configurePosthog()
 	start := time.Now()
 	sqlDb, err := auth.CreateNewDb()
 	if err != nil {
@@ -171,7 +182,7 @@ func HandleLogin(c *fiber.Ctx) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 	ctx := context.Background()
-	phMonitor := configurePosthog()
+
 	start := time.Now()
 	sqlDb, err := auth.CreateNewDb()
 	if err != nil {
@@ -223,7 +234,7 @@ func HandleLogin(c *fiber.Ctx) error {
 }
 
 func HandleLogout(c *fiber.Ctx) error {
-	phMonitor := configurePosthog()
+
 	start := time.Now()
 	user, err := auth.AuthorizePost(c)
 	if err != nil {
@@ -251,19 +262,29 @@ func HandleLogout(c *fiber.Ctx) error {
 }
 
 func HandleXPublish(c *fiber.Ctx) error {
+
+	start := time.Now()
 	text := c.FormValue("xInput")
 	params := url.Values{}
 	params.Add("text", text)
 	redirectUrl := fmt.Sprintf("https://twitter.com/intent/tweet?%s", params.Encode())
+	if err := phMonitor.SendEvent("share", "socials", "socialsX", time.Since(start).Milliseconds(), false, ""); err != nil {
+		log.Printf("Failed to send event to Posthog because of %s", err.Error())
+	}
 	c.Set("HX-Redirect", redirectUrl)
 	return c.SendStatus(fiber.StatusOK)
 }
 
 func HandleBskyPublish(c *fiber.Ctx) error {
+
+	start := time.Now()
 	text := c.FormValue("bskyInput")
 	params := url.Values{}
 	params.Add("text", text)
 	redirectUrl := fmt.Sprintf("https://bsky.app/intent/compose?%s", params.Encode())
+	if err := phMonitor.SendEvent("share", "socials", "socialsBsky", time.Since(start).Milliseconds(), false, ""); err != nil {
+		log.Printf("Failed to send event to Posthog because of %s", err.Error())
+	}
 	c.Set("HX-Redirect", redirectUrl)
 	return c.SendStatus(fiber.StatusOK)
 }

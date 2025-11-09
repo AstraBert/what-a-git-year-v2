@@ -64,16 +64,19 @@ type GitHubClient interface {
 
 type GitYearClient struct {
 	AuthToken string
+	client    *github.Client
 }
 
 func NewGitYearClient(token string) *GitYearClient {
+	client := github.NewClient(nil).WithAuthToken(token)
 	return &GitYearClient{
 		AuthToken: token,
+		client:    client,
 	}
 }
 
 func (c *GitYearClient) GetClient() *github.Client {
-	return github.NewClient(nil).WithAuthToken(c.AuthToken)
+	return c.client
 }
 
 func chooseTopTen(dict map[string]int) []string {
