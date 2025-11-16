@@ -29,7 +29,7 @@ func TestHomeRoute(t *testing.T) {
 		t.Error("Unexpected body in response")
 	}
 	req, _ = http.NewRequest("POST", "/", nil)
-	resp, err = app.Test(req)
+	resp, err = app.Test(req, 5000)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
@@ -44,7 +44,7 @@ func TestSigninRoute(t *testing.T) {
 	if err != nil {
 		return
 	}
-	resp, err := app.Test(req)
+	resp, err := app.Test(req, 5000)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
@@ -58,7 +58,7 @@ func TestSigninRoute(t *testing.T) {
 		t.Error("Unexpected body in response")
 	}
 	req, _ = http.NewRequest("POST", "/signin", nil)
-	resp, err = app.Test(req)
+	resp, err = app.Test(req, 5000)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
@@ -73,7 +73,7 @@ func TestSignUpRoute(t *testing.T) {
 	if err != nil {
 		return
 	}
-	resp, err := app.Test(req)
+	resp, err := app.Test(req, 5000)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
@@ -87,7 +87,7 @@ func TestSignUpRoute(t *testing.T) {
 		t.Error("Unexpected body in response")
 	}
 	req, _ = http.NewRequest("POST", "/signup", nil)
-	resp, err = app.Test(req)
+	resp, err = app.Test(req, 5000)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
@@ -102,7 +102,7 @@ func TestSearchoute(t *testing.T) {
 	if err != nil {
 		return
 	}
-	resp, err := app.Test(req)
+	resp, err := app.Test(req, 5000)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
@@ -116,7 +116,7 @@ func TestSearchoute(t *testing.T) {
 		t.Error("Unexpected body in response")
 	}
 	req, _ = http.NewRequest("POST", "/search", nil)
-	resp, err = app.Test(req)
+	resp, err = app.Test(req, 5000)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
@@ -131,7 +131,7 @@ func Test404Route(t *testing.T) {
 	if err != nil {
 		return
 	}
-	resp, err := app.Test(req)
+	resp, err := app.Test(req, 5000)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
@@ -213,7 +213,7 @@ func TestSearchGateway(t *testing.T) {
 			t.Error("Unexpected body in response")
 		}
 		req = httptest.NewRequest("POST", "/search/gateway?search-input=run-llama&search-type=org", nil)
-		res, err = app.Test(req)
+		res, err = app.Test(req, 5000)
 		if err != nil {
 			t.Errorf("No error expected while creating the response, got %s", err.Error())
 		}
@@ -238,7 +238,7 @@ func TestAuth(t *testing.T) {
 	} else {
 		app := Setup()
 		req := httptest.NewRequest("POST", "/logout", nil)
-		res, err := app.Test(req)
+		res, err := app.Test(req, 5000)
 		if err != nil {
 			t.Errorf("No error expected while creating the response, got %s", err.Error())
 		}
@@ -246,7 +246,7 @@ func TestAuth(t *testing.T) {
 			t.Errorf("Expecting the endpoint to fail with 500 status code, got %d", res.StatusCode)
 		}
 		req = httptest.NewRequest("POST", "/login?user=hello&password=hello", nil)
-		res, err = app.Test(req)
+		res, err = app.Test(req, 5000)
 		if err != nil {
 			t.Errorf("No error expected while creating the response, got %s", err.Error())
 		}
