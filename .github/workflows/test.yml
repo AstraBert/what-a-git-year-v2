@@ -2,8 +2,12 @@ name: Go Tests - PR
 
 on:
   pull_request:
+    paths:
+      - "**/*.go"
   push:
     branches: [main]
+    paths:
+      - "**/*.go"
 
 jobs:
   test:

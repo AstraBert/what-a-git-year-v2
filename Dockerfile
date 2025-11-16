@@ -1,27 +1,15 @@
-# Build stage
-FROM golang:1.25-alpine AS builder
+FROM golang:1.25-bookworm AS builder
 
-RUN apk add --no-cache git ca-certificates tzdata
+WORKDIR /build/
 
-WORKDIR /build
-COPY go.mod go.sum /build/
-RUN go mod download
 COPY . /build/
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags="-w -s" \
-    -o server \
-    .
 
-# Final stage
-FROM alpine:3.19
-RUN apk add --no-cache ca-certificates tzdata
-RUN addgroup -g 1001 -S appgroup && \
-    adduser -u 1001 -S appuser -G appgroup
-WORKDIR /app
+RUN go build -tags netgo -ldflags '-s -w' -o server
 
-COPY --from=builder /build/server .
-RUN chown -R appuser:appgroup /app
-USER appuser
+FROM debian:bookworm-slim
+WORKDIR /app/
+COPY --from=builder /build/server /app/
+RUN ls -la
 
 EXPOSE 8000
 
