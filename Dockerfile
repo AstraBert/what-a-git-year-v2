@@ -23,6 +23,6 @@ COPY --from=builder /build/server .
 RUN chown -R appuser:appgroup /app
 USER appuser
 
-EXPOSE 8080
+EXPOSE 8000
 
 ENTRYPOINT [ "./server" ]

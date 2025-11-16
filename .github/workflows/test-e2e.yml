@@ -1,0 +1,40 @@
+name: Go Tests E2E - PR
+
+on:
+  pull_request:
+
+jobs:
+  test_e2e:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go-version: ["1.25"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ matrix.go-version }}-
+
+      - name: Run tests
+        run: make test
+        env: 
+            GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+            POSTHOG_ENDPOINT: ${{ secrets.POSTHOG_ENDPOINT }}
+            POSTGRES_CONNECTION_STRING: ${{ secrets.POSTGRES_CONNECTION_STRING }}
+            CACHE_TABLE: ${{ secrets.CACHE_TABLE }}
+            RATE_LIMITING_TABLE: ${{ secrets.RATE_LIMITING_TABLE }}
