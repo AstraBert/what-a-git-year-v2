@@ -15,7 +15,7 @@ func TestHomeRoute(t *testing.T) {
 	if err != nil {
 		return
 	}
-	resp, err := app.Test(req)
+	resp, err := app.Test(req, 5000)
 	if err != nil {
 		t.Errorf("Not expecting error while getting response, got %s", err.Error())
 	}
