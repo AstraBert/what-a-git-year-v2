@@ -2,6 +2,8 @@ name: Go Tests E2E - PR
 
 on:
   pull_request:
+    paths:
+      - "**/*.go"
 
 jobs:
   test_e2e:
