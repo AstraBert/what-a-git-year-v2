@@ -9,7 +9,7 @@ RUN go build -tags netgo -ldflags '-s -w' -o server
 FROM debian:bookworm-slim
 WORKDIR /app/
 COPY --from=builder /build/server /app/
-RUN ls -la
+COPY --from=builder /build/static/ /app/
 
 EXPOSE 8000
 
