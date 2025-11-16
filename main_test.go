@@ -199,7 +199,7 @@ func TestSearchGateway(t *testing.T) {
 	} else {
 		app := Setup()
 		req := httptest.NewRequest("POST", "/search/gateway?search-input=torvalds&search-type=user", nil)
-		res, err := app.Test(req)
+		res, err := app.Test(req, 100000)
 		if err != nil {
 			t.Errorf("No error expected while creating the response, got %s", err.Error())
 		}

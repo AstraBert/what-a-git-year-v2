@@ -38,6 +38,9 @@ build: install_deps
 	GOARCH=arm64 GOOS=darwin go build -o ${BIN}/${BIN_NAME}-darwin-arm64 ${MAIN_PKG}
 	GOARCH=arm64 GOOS=linux go build -o ${BIN}/${BIN_NAME}-linux-arm64 ${MAIN_PKG}
 	GOARCH=arm64 GOOS=windows go build -o ${BIN}/${BIN_NAME}-windows-arm64.exe ${MAIN_PKG}
+pre-commit:
+	$(info ******************** building project ********************)
+	pre-commit run -a
 
 clean:
 	@rm -rf ${BIN}

@@ -308,7 +308,7 @@ func HandleLogout(c *fiber.Ctx) error {
 	start := time.Now()
 	user, err := auth.AuthorizePost(c)
 	if err != nil {
-		errPh := phMonitor.SendEvent(user.Username, "userAuth", "logout", time.Since(start).Milliseconds(), true, err.Error())
+		errPh := phMonitor.SendEvent("logoutUnauthorized", "userAuth", "logout", time.Since(start).Milliseconds(), true, err.Error())
 		if errPh != nil {
 			log.Println("PostHog failed to record event")
 		}

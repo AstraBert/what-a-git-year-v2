@@ -1,3 +1,10 @@
 tmp/
 .github/
 .env
+*_test.go
+Makefile
+*.sh
+design.png
+sqlc.yaml
+*.md
+LICENSE 
