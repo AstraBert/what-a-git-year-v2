@@ -1,6 +1,11 @@
 package templates
 
 templ NavBar(authenticated bool) {
+    <div class="bg-success text-success-content px-4 py-1 text-xs flex items-center justify-center gap-2 w-full">
+        <div class="badge badge-xs badge-success"></div>
+        <span>All systems operational</span>
+        <a href="https://monitor.palettify.nl/status/gityear" class="link link-hover underline">View details</a>
+    </div>
     <div class="navbar bg-base-100 shadow-sm h-16">
         <div class="navbar-start">
             <div class="dropdown">
@@ -14,6 +19,7 @@ templ NavBar(authenticated bool) {
                 class="menu menu-lg dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-70 p-2 shadow">
                 <li><a href="/">Home</a></li>
                 <li><a href="/search">Discover your Git Year</a></li>
+                <li><a href="https://monitor.palettify.nl/status/gityear">Status Page</a></li>
             </ul>
             </div>
         </div>
