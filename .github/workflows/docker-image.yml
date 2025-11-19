@@ -67,8 +67,22 @@ jobs:
       
       - name: Dokploy Deployment
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: benbristow/dokploy-deploy-action@0.0.1
-        with:
-          auth_token: ${{ secrets.DOKPLOY_AUTH_TOKEN }}
-          application_id: ${{ secrets.DOKPLOY_APPLICATION_ID }}
-          dokploy_url: ${{ secrets.DOKPLOY_URL }}
+        run: |
+          response=$(curl -X 'POST' \
+            "$DOKPLOY_URL/api/application.deploy" \
+            -H 'accept: application/json' \
+            -H 'Content-Type: application/json' \
+            -H "x-api-key: $DOKPLOY_AUTH_TOKEN" \
+            -d "{\"applicationId\": \"$DOKPLOY_APPLICATION_ID\"}" \
+            -w "%{http_code}" \
+            -o /dev/null \
+            -s)
+          
+          if [ "$response" -ne 200 ]; then
+            echo "Deployment failed with status code: $response"
+            exit 1
+          fi
+        env:
+          DOKPLOY_AUTH_TOKEN: ${{ secrets.DOKPLOY_AUTH_TOKEN }}
+          DOKPLOY_APPLICATION_ID: ${{ secrets.DOKPLOY_APPLICATION_ID }}
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
